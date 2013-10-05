@@ -61,10 +61,10 @@ endif
 #
 
 # Define project name here
-PROJECT = stm32f3discovery-demo
+PROJECT = stm-gyrodata
 
 # Imported source files and paths
-CHIBIOS = /home/kersny/code/ChibiOS
+CHIBIOS = ../ChibiOS-RT
 include $(CHIBIOS)/boards/ST_STM32F3_DISCOVERY/board.mk
 include $(CHIBIOS)/os/hal/platforms/STM32F30x/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
@@ -84,6 +84,7 @@ CSRC = $(PORTSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
+	   $(CHIBIOS)/os/various/shell.c \
        usbcfg.c \
        main.c
 

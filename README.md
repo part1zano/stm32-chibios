@@ -20,15 +20,6 @@ I use [stlink](https://github.com/texane/stlink), with the board plugged into th
 
     {sudo} st-flash write build/stm32f3discovery-demo.bin 0x8000000
 
-### Use
-
-Connect to the USB USER port.
-
-    {sudo} cat /dev/ttyACM0
-
-You should see 9 floating point values corresponding to the x, y, and z values from the gyroscope, accelerometer, and magnetometer.
-
-
 ### Debug
 
 Again, with [stlink](https://github.com/texane/stlink).

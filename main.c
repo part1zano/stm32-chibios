@@ -25,6 +25,8 @@
 #include "i2c.h"
 #include "usbcfg.h"
 #include "chprintf.h"
+#include "shell.h"
+#include "chthreads.h"
 
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
@@ -160,7 +162,116 @@ static uint8_t readMag(float* data)
     return 1;
 }
 
+#define SHELL_WA_SIZE   THD_WA_SIZE(1024)
+
+static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
+  chprintf(chp, "ChibiOS test suite\r\n");
+  TestThread(chp);
+}
+
+static void cmd_help(BaseSequentialStream *chp, int argc, char *argv[]) {
+	chprintf(chp, "ChibiOS test shell commands:\r\n");
+	chprintf(chp, "test -- run some of ChibiOS's tests\r\n");
+	chprintf(chp, "gyrodata -- get three gyroscope's numbers. Parameter is number of lines\r\n");
+}
+
+static void cmd_gyrodata(BaseSequentialStream *chp, int argc, char *argv[]) {
+	float gyrodata[3];
+	uint32_t times = 5;
+	uint32_t delay = 200;
+	if (argc >= 1) {
+		times = atoi(argv[0]);
+	}
+	if (argc >= 2) {
+		delay = atoi(argv[1]);
+	}
+	uint32_t i = 0;
+	chprintf(chp, " Number 1\t Number 2\t Number 3\t #\r\n");
+	for (i = 0; i < times; i++) {
+		if (readGyro(gyrodata)) {
+			chprintf(chp, " %f\t %f\t %f\t %d\r\n", gyrodata[0], gyrodata[1], gyrodata[2], i);
+		}
+		chThdSleepMilliseconds(delay);
+	}
+}
+
+static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
+	float gyrodata[2][3];
+	chprintf(chp, "Adjust the motorcycle vertically and press the User button\r\n");
+	while (!palReadPad(GPIOA, GPIOA_BUTTON)) { }
+	if (!readGyro(gyrodata[0])) {
+		chprintf(chp, "Error getting gyrodata!\r\n");
+		return;
+	}
+	else {
+		chprintf(chp, "Got gyrodata for the 1st time!\r\n");
+	}
+	chThdSleepMilliseconds(5000);
+	chprintf(chp, "Now place it on the side stand and press the button again\r\n");
+	while (!palReadPad(GPIOA, GPIOA_BUTTON)) { }
+	if (!readGyro(gyrodata[1])) {
+		chprintf(chp, "Error getting gyrodata!\r\n");
+		return;
+	} else {
+		chprintf(chp, "Got gyrodata for the 2nd time!\r\n");
+	}
+	chprintf(chp, "Got your gyrodata successfully\r\n");
+	uint8_t i = 0;
+	for (i = 0; i < 2; i++) {
+		chprintf(chp, "%d\t %f\t %f\t %f\r\n", i, gyrodata[i][0], gyrodata[i][1], gyrodata[i][2]);
+	}
+}
+
+static const ShellCommand shCmds[] = {
+  {"test",      cmd_test},
+  {"helpme",	cmd_help},
+  {"gyrodata",	cmd_gyrodata},
+  {"adjust", cmd_adjust},
+  {NULL, NULL}
+};
+
+static const ShellConfig shCfg = {
+  (BaseSequentialStream *)&SDU1,
+  shCmds
+};
+
+static WORKING_AREA(waThreadBlink, 128);
+
+static msg_t ThreadBlink(void *arg) {
+	(void) arg;
+
+	chRegSetThreadName("blinker");
+
+	while (TRUE) {
+		palSetPad(GPIOE, GPIOE_LED3_RED);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED3_RED);
+		palSetPad(GPIOE, GPIOE_LED5_ORANGE);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED5_ORANGE);
+		palSetPad(GPIOE, GPIOE_LED7_GREEN);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED7_GREEN);
+		palSetPad(GPIOE, GPIOE_LED9_BLUE);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED9_BLUE);
+		palSetPad(GPIOE, GPIOE_LED10_RED);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED10_RED);
+		palSetPad(GPIOE, GPIOE_LED8_ORANGE);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED8_ORANGE);
+		palSetPad(GPIOE, GPIOE_LED6_GREEN);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED6_GREEN);
+		palSetPad(GPIOE, GPIOE_LED4_BLUE);
+		chThdSleepMilliseconds(125);
+		palClearPad(GPIOE, GPIOE_LED4_BLUE);
+	}
+}
+
 int main(void) {
+	Thread *sh = NULL;
 
     halInit();
     chSysInit();
@@ -178,8 +289,21 @@ int main(void) {
     initGyro();
     initAccel();
     initMag();
+	shellInit();
+	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7));
+	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7));
+	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 
     while (TRUE) {
+		if (!sh) {
+			sh = shellCreate(&shCfg, SHELL_WA_SIZE, NORMALPRIO);
+		}
+		else if (chThdTerminated(sh)) {
+			chThdRelease(sh);
+			sh = NULL;
+		}
+		chThdSleepMilliseconds(1000);
+		/*
 	float gyroData[3];
         float accelData[3];
         float magData[3];
@@ -188,5 +312,6 @@ int main(void) {
             chprintf((BaseSequentialStream *)&SDU1, "%f %f %f ", accelData[0], accelData[1], accelData[2]);
             chprintf((BaseSequentialStream *)&SDU1, "%f %f %f\n", magData[0], magData[1], magData[2]);
         }
+		*/
     }
 }
