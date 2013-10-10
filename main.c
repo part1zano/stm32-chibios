@@ -36,6 +36,8 @@ SerialUSBDriver SDU1;
 
 static float mdps_per_digit = 8.75;
 
+uint8_t schema = 0;
+#define MAXSCH 2
 
 static const SPIConfig spi1cfg = {
   NULL,
@@ -195,6 +197,15 @@ static void cmd_gyrodata(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
+static void cmd_nextsch(BaseSequentialStream *chp, int argc, char *argv[]) {
+	if (schema < MAXSCH) {
+		schema++;
+	}
+	else {
+		schema = 0;
+	}
+}
+
 static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
 	float gyrodata[2][3];
 	chprintf(chp, "Adjust the motorcycle vertically and press the User button\r\n");
@@ -227,6 +238,7 @@ static const ShellCommand shCmds[] = {
   {"helpme",	cmd_help},
   {"gyrodata",	cmd_gyrodata},
   {"adjust", cmd_adjust},
+  {"nextsch", cmd_nextsch},
   {NULL, NULL}
 };
 
@@ -241,19 +253,40 @@ static msg_t ThreadBlink(void *arg) {
 	(void) arg;
 
 	chRegSetThreadName("blinker");
-	uint8_t i = 8;
+	uint8_t i = GPIOE_LED4_BLUE;
 
 	while (TRUE) { 
-		if (i > 15+8) {
-			i = 8;
+		if (schema == 0) {
+			if (i > 15+8) {
+				i = GPIOE_LED4_BLUE;
+			}
+			if (i <= 15) {
+				palSetPad(GPIOE, i);
+			}
+			else {
+				palClearPad(GPIOE, 31-i);
+			}
+			i++;
 		}
-		if (i <= 15) {
-			palSetPad(GPIOE, i);
+		else if (schema == 1) {
+			uint8_t j = 8;
+			for (j=8; j<=15; j++) {
+				palTogglePad(GPIOE,  j);
+			}
 		}
-		else {
-			palClearPad(GPIOE, 31-i);
+		else if (schema == 2) {
+			if (i > 15) {
+				i = 8;
+			}
+			if (i+3 <= 15) {
+				palSetPad(GPIOE, i+3);
+			}
+			else {
+				palSetPad(GPIOE, i-5);
+			}
+			palClearPad(GPIOE, i);
+			i++;
 		}
-		i++;
 		chThdSleepMilliseconds(125);
 	}
 }
