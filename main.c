@@ -257,10 +257,10 @@ static msg_t ThreadBlink(void *arg) {
 
 	while (TRUE) { 
 		if (schema == 0) {
-			if (i > 15+8) {
+			if (i > GPIOE_LED6_GREEN + GPIOE_LED4_BLUE) {
 				i = GPIOE_LED4_BLUE;
 			}
-			if (i <= 15) {
+			if (i <= GPIOE_LED6_GREEN) {
 				palSetPad(GPIOE, i);
 			}
 			else {
@@ -269,14 +269,14 @@ static msg_t ThreadBlink(void *arg) {
 			i++;
 		}
 		else if (schema == 1) {
-			uint8_t j = 8;
-			for (j=8; j<=15; j++) {
+			uint8_t j = GPIOE_LED4_BLUE;
+			for (j=GPIOE_LED4_BLUE; j<=GPIOE_LED6_GREEN; j++) {
 				palTogglePad(GPIOE,  j);
 			}
 		}
 		else if (schema == 2) {
-			if (i > 15) {
-				i = 8;
+			if (i > GPIOE_LED6_GREEN) { 
+				i = GPIOE_LED4_BLUE;
 			}
 			if (i+3 <= 15) {
 				palSetPad(GPIOE, i+3);
