@@ -27,12 +27,17 @@
 #include "chprintf.h"
 #include "shell.h"
 #include "chthreads.h"
+// testing rtc
+#include "rtc.h"
 
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
 
 /* Virtual serial port over USB.*/
 SerialUSBDriver SDU1;
+
+/*RTC time structure*/
+RTCTime time;
 
 static float mdps_per_digit = 8.75;
 
@@ -253,6 +258,13 @@ static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
+static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
+	if (argc == 0) {
+		rtcGetTime(&RTCD1, &time);
+		chprintf(chp, "current rtc time: %d, %d\r\n", time.tv_time, time.tv_date);
+	}
+}
+
 static const ShellCommand shCmds[] = {
   {"test",      cmd_test},
   {"helpme",	cmd_help},
@@ -260,6 +272,7 @@ static const ShellCommand shCmds[] = {
   {"magdata", cmd_magdata},
   {"adjust", cmd_adjust},
   {"nextsch", cmd_nextsch},
+  {"time", cmd_time},
   {NULL, NULL}
 };
 
@@ -326,6 +339,7 @@ int main(void) {
     usbStart(serusbcfg.usbp, &usbcfg);
     usbConnectBus(serusbcfg.usbp);
 
+
     spiStart(&SPID1, &spi1cfg);
     i2cStart(&I2CD1, &i2cconfig);
     initGyro();
@@ -356,4 +370,5 @@ int main(void) {
         }
 		*/
     }
+	return 0; // never returns, lol
 }
