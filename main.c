@@ -197,6 +197,26 @@ static void cmd_gyrodata(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
+static void cmd_magdata(BaseSequentialStream *chp, int argc, char *argv[]) {
+	float magdata[3];
+	uint32_t times = 5;
+	uint32_t delay = 200;
+	if (argc >= 1) {
+		times = atoi(argv[0]);
+	}
+	if (argc >= 2) {
+		delay = atoi(argv[1]);
+	}
+	uint32_t i = 0;
+	chprintf(chp, " Number 1\t Number 2\t Number 3\t #\r\n");
+	for (i = 0; i < times; i++) {
+		if (readMag(magdata)) {
+			chprintf(chp, " %f\t %f\t %f\t %d\r\n", magdata[0], magdata[1], magdata[2], i);
+		}
+		chThdSleepMilliseconds(delay);
+	}
+}
+
 static void cmd_nextsch(BaseSequentialStream *chp, int argc, char *argv[]) {
 	if (schema < MAXSCH) {
 		schema++;
@@ -237,6 +257,7 @@ static const ShellCommand shCmds[] = {
   {"test",      cmd_test},
   {"helpme",	cmd_help},
   {"gyrodata",	cmd_gyrodata},
+  {"magdata", cmd_magdata},
   {"adjust", cmd_adjust},
   {"nextsch", cmd_nextsch},
   {NULL, NULL}
