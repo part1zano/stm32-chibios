@@ -59,7 +59,7 @@ static const I2CConfig i2cconfig = {
   0,
   0
 };
-
+/*
 static uint8_t readByteSPI(uint8_t reg)
 {
 	char txbuf[2] = {0x80 | reg, 0xFF};
@@ -69,6 +69,7 @@ static uint8_t readByteSPI(uint8_t reg)
 	spiUnselect(&SPID1);
 	return rxbuf[1];
 }
+*/
 static uint8_t writeByteSPI(uint8_t reg, uint8_t val)
 {
 	char txbuf[2] = {reg, val};
@@ -79,6 +80,7 @@ static uint8_t writeByteSPI(uint8_t reg, uint8_t val)
 	return rxbuf[1];
 }
 
+/*
 static uint8_t readByteI2C(uint8_t addr, uint8_t reg)
 {
     uint8_t data;
@@ -87,6 +89,7 @@ static uint8_t readByteI2C(uint8_t addr, uint8_t reg)
     i2cReleaseBus(&I2CD1);
     return data;
 }
+*/
 static void writeByteI2C(uint8_t addr, uint8_t reg, uint8_t val)
 {
     uint8_t cmd[] = {reg, val};
@@ -173,11 +176,15 @@ static uint8_t readMag(float* data)
 #define SHELL_WA_SIZE   THD_WA_SIZE(1024)
 
 static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
+	(void) argc;
+	(void) argv;
   chprintf(chp, "ChibiOS test suite\r\n");
   TestThread(chp);
 }
 
 static void cmd_help(BaseSequentialStream *chp, int argc, char *argv[]) {
+	(void) argc;
+	(void) argv;
 	chprintf(chp, "ChibiOS test shell commands:\r\n");
 	chprintf(chp, "test -- run some of ChibiOS's tests\r\n");
 	chprintf(chp, "gyrodata -- get three gyroscope's numbers. Parameter is number of lines\r\n");
@@ -224,16 +231,21 @@ static void cmd_magdata(BaseSequentialStream *chp, int argc, char *argv[]) {
 }
 
 static void cmd_nextsch(BaseSequentialStream *chp, int argc, char *argv[]) {
+	(void) argc;
+	(void) argv;
 	if (schema < MAXSCH) {
 		schema++;
 	}
 	else {
 		schema = 0;
 	}
+	chprintf(chp, "Blinking schema set to %d", schema);
 }
 
 static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
 	float gyrodata[2][3];
+	(void) argc;
+	(void) argv;
 	chprintf(chp, "Adjust the motorcycle vertically and press the User button\r\n");
 	while (!palReadPad(GPIOA, GPIOA_BUTTON)) { }
 	if (!readGyro(gyrodata[0])) {
@@ -329,6 +341,7 @@ static msg_t ThreadBlink(void *arg) {
 		}
 		chThdSleepMilliseconds(125);
 	}
+	return 0; // never returns
 }
 
 int main(void) {
