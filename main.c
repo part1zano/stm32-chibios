@@ -29,6 +29,7 @@
 #include "chthreads.h"
 // testing rtc
 #include "rtc.h"
+#include "chrtclib.h"
 
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
@@ -37,7 +38,7 @@
 SerialUSBDriver SDU1;
 
 /*RTC time structure*/
-RTCTime time;
+RTCTime timestruct;
 
 static float mdps_per_digit = 8.75;
 
@@ -260,8 +261,13 @@ static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 	if (argc == 0) {
-		rtcGetTime(&RTCD1, &time);
-		chprintf(chp, "current rtc time: %d, %d\r\n", time.tv_time, time.tv_date);
+		time_t unixTime = rtcGetTimeUnixSec(&RTCD1);
+		struct tm ts = *gmtime(&unixTime);
+		chprintf(chp, "current rtc time: %d\r\nwhich is %d-%d-%d %d:%d:%d UTC\r\n", unixTime, (1900+ts.tm_year), (1+ts.tm_mon), ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec);
+	} else if (argc == 1) {
+		time_t newtime = atoi(argv[0]);
+		rtcSetTimeUnixSec(&RTCD1, newtime);
+		chprintf(chp, "New time is: %d\r\n", newtime);
 	}
 }
 
