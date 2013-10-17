@@ -46,18 +46,18 @@ uint8_t schema = 0;
 #define MAXSCH 2
 
 static const SPIConfig spi1cfg = {
-  NULL,
-  /* HW dependent part.*/
-  GPIOE,
-  GPIOE_SPI1_CS,
-  SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA,
-  0
+	NULL,
+	/* HW dependent part.*/
+	GPIOE,
+	GPIOE_SPI1_CS,
+	SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA,
+	0
 };
 
 static const I2CConfig i2cconfig = {
-  0x00902025, //voodoo magic
-  0,
-  0
+	0x00902025, //voodoo magic
+	0,
+	0
 };
 /*
 static uint8_t readByteSPI(uint8_t reg)
@@ -83,94 +83,94 @@ static uint8_t writeByteSPI(uint8_t reg, uint8_t val)
 /*
 static uint8_t readByteI2C(uint8_t addr, uint8_t reg)
 {
-    uint8_t data;
-    i2cAcquireBus(&I2CD1);
-    (void)i2cMasterTransmitTimeout(&I2CD1, addr, &reg, 1, &data, 1, TIME_INFINITE);
-    i2cReleaseBus(&I2CD1);
-    return data;
+	uint8_t data;
+	i2cAcquireBus(&I2CD1);
+	(void)i2cMasterTransmitTimeout(&I2CD1, addr, &reg, 1, &data, 1, TIME_INFINITE);
+	i2cReleaseBus(&I2CD1);
+	return data;
 }
 */
 static void writeByteI2C(uint8_t addr, uint8_t reg, uint8_t val)
 {
-    uint8_t cmd[] = {reg, val};
-    i2cAcquireBus(&I2CD1);
-    (void)i2cMasterTransmitTimeout(&I2CD1, addr, cmd, 2, NULL, 0, TIME_INFINITE);
-    i2cReleaseBus(&I2CD1);
+	uint8_t cmd[] = {reg, val};
+	i2cAcquireBus(&I2CD1);
+	(void)i2cMasterTransmitTimeout(&I2CD1, addr, cmd, 2, NULL, 0, TIME_INFINITE);
+	i2cReleaseBus(&I2CD1);
 }
 
 static void initGyro(void)
 {
-    /* see the L3GD20 Datasheet */
-    writeByteSPI(0x20, 0xcF);
+	/* see the L3GD20 Datasheet */
+	writeByteSPI(0x20, 0xcF);
 }
 static void initAccel(void)
 {
-    // Highest speed, enable all axes
-    writeByteI2C(0x19, 0x20, 0x97);
+	// Highest speed, enable all axes
+	writeByteI2C(0x19, 0x20, 0x97);
 }
 static void initMag(void)
 {
-    // Highest speed
-    writeByteI2C(0x1E, 0x00, 0x1C);
-    writeByteI2C(0x1E, 0x02, 0x00);
+	// Highest speed
+	writeByteI2C(0x1E, 0x00, 0x1C);
+	writeByteI2C(0x1E, 0x02, 0x00);
 }
 static uint8_t readGyro(float* data)
 {
-    /* read from L3GD20 registers and assemble data */
-    /* 0xc0 sets read and address increment */
-    char txbuf[8] = {0xc0 | 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    char rxbuf[8];
-    spiSelect(&SPID1);
-    spiExchange(&SPID1, 8, txbuf, rxbuf);
-    spiUnselect(&SPID1);
-    if (rxbuf[1] & 0x7) {
-        int16_t val_x = (rxbuf[3] << 8) | rxbuf[2];
-        int16_t val_y = (rxbuf[5] << 8) | rxbuf[4];
-        int16_t val_z = (rxbuf[7] << 8) | rxbuf[6];
-        data[0] = (((float)val_x) * mdps_per_digit)/1000.0;
-        data[1] = (((float)val_y) * mdps_per_digit)/1000.0;
-        data[2] = (((float)val_z) * mdps_per_digit)/1000.0;
-        return 1;
-    }
-    return 0;
+	/* read from L3GD20 registers and assemble data */
+	/* 0xc0 sets read and address increment */
+	char txbuf[8] = {0xc0 | 0x27, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	char rxbuf[8];
+	spiSelect(&SPID1);
+	spiExchange(&SPID1, 8, txbuf, rxbuf);
+	spiUnselect(&SPID1);
+	if (rxbuf[1] & 0x7) {
+		int16_t val_x = (rxbuf[3] << 8) | rxbuf[2];
+		int16_t val_y = (rxbuf[5] << 8) | rxbuf[4];
+		int16_t val_z = (rxbuf[7] << 8) | rxbuf[6];
+		data[0] = (((float)val_x) * mdps_per_digit)/1000.0;
+		data[1] = (((float)val_y) * mdps_per_digit)/1000.0;
+		data[2] = (((float)val_z) * mdps_per_digit)/1000.0;
+		return 1;
+	}
+	return 0;
 }
 static uint8_t readAccel(float* data)
 {
-    // setting MSB makes it increment the address for a multiple byte read
-    uint8_t start_reg = 0x27 | 0x80;
-    uint8_t out[7];
-    i2cAcquireBus(&I2CD1);
-    msg_t f = i2cMasterTransmitTimeout(&I2CD1, 0x19, &start_reg, 1, out, 7, TIME_INFINITE);
-    (void)f;
-    i2cReleaseBus(&I2CD1);
-    if (out[0] & 0x8) {
-        int16_t val_x = (out[2] << 8) | out[1];
-        int16_t val_y = (out[4] << 8) | out[3];
-        int16_t val_z = (out[6] << 8) | out[5];
-        // Accel scale is +- 2.0g
-        data[0] = ((float)val_x)*(4.0/(65535.0))*9.81;
-        data[1] = ((float)val_y)*(4.0/(65535.0))*9.81;
-        data[2] = ((float)val_z)*(4.0/(65535.0))*9.81;
-        return 1;
-    }
-    return 0;
+	// setting MSB makes it increment the address for a multiple byte read
+	uint8_t start_reg = 0x27 | 0x80;
+	uint8_t out[7];
+	i2cAcquireBus(&I2CD1);
+	msg_t f = i2cMasterTransmitTimeout(&I2CD1, 0x19, &start_reg, 1, out, 7, TIME_INFINITE);
+	(void)f;
+	i2cReleaseBus(&I2CD1);
+	if (out[0] & 0x8) {
+		int16_t val_x = (out[2] << 8) | out[1];
+		int16_t val_y = (out[4] << 8) | out[3];
+		int16_t val_z = (out[6] << 8) | out[5];
+		// Accel scale is +- 2.0g
+		data[0] = ((float)val_x)*(4.0/(65535.0))*9.81;
+		data[1] = ((float)val_y)*(4.0/(65535.0))*9.81;
+		data[2] = ((float)val_z)*(4.0/(65535.0))*9.81;
+		return 1;
+	}
+	return 0;
 }
 static uint8_t readMag(float* data)
 {
-    uint8_t start_reg = 0x03;
-    uint8_t out[7];
-    i2cAcquireBus(&I2CD1);
-    msg_t f = i2cMasterTransmitTimeout(&I2CD1, 0x1E, &start_reg, 1, out, 7, TIME_INFINITE);
-    (void)f;
-    i2cReleaseBus(&I2CD1);
-    //out[6] doesn't seem to reflect actual new data, so just push out every time
-    int16_t val_x = (out[0] << 8) | out[1];
-    int16_t val_z = (out[2] << 8) | out[3];
-    int16_t val_y = (out[4] << 8) | out[5];
-    data[0] = ((float)val_x)*1.22;
-    data[1] = ((float)val_y)*1.22;
-    data[2] = ((float)val_z)*1.22;
-    return 1;
+	uint8_t start_reg = 0x03;
+	uint8_t out[7];
+	i2cAcquireBus(&I2CD1);
+	msg_t f = i2cMasterTransmitTimeout(&I2CD1, 0x1E, &start_reg, 1, out, 7, TIME_INFINITE);
+	(void)f;
+	i2cReleaseBus(&I2CD1);
+	//out[6] doesn't seem to reflect actual new data, so just push out every time
+	int16_t val_x = (out[0] << 8) | out[1];
+	int16_t val_z = (out[2] << 8) | out[3];
+	int16_t val_y = (out[4] << 8) | out[5];
+	data[0] = ((float)val_x)*1.22;
+	data[1] = ((float)val_y)*1.22;
+	data[2] = ((float)val_z)*1.22;
+	return 1;
 }
 
 #define SHELL_WA_SIZE   THD_WA_SIZE(1024)
@@ -178,16 +178,8 @@ static uint8_t readMag(float* data)
 static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
-  chprintf(chp, "ChibiOS test suite\r\n");
-  TestThread(chp);
-}
-
-static void cmd_help(BaseSequentialStream *chp, int argc, char *argv[]) {
-	(void) argc;
-	(void) argv;
-	chprintf(chp, "ChibiOS test shell commands:\r\n");
-	chprintf(chp, "test -- run some of ChibiOS's tests\r\n");
-	chprintf(chp, "gyrodata -- get three gyroscope's numbers. Parameter is number of lines\r\n");
+	chprintf(chp, "ChibiOS test suite\r\n");
+	TestThread(chp);
 }
 
 static void cmd_gyrodata(BaseSequentialStream *chp, int argc, char *argv[]) {
@@ -239,7 +231,7 @@ static void cmd_nextsch(BaseSequentialStream *chp, int argc, char *argv[]) {
 	else {
 		schema = 0;
 	}
-	chprintf(chp, "Blinking schema set to %d", schema);
+	chprintf(chp, "Blinking schema set to %d\r\n", schema);
 }
 
 static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
@@ -275,16 +267,20 @@ static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 	if (argc == 0) {
 		time_t unixTime = rtcGetTimeUnixSec(&RTCD1);
 		struct tm ts = *gmtime(&unixTime);
-		chprintf(chp, "current rtc time: %d\r\nwhich is %d-%d-%d %d:%d:%d UTC\r\n", unixTime, (1900+ts.tm_year), (1+ts.tm_mon), ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec);
+		chprintf(chp, "current rtc time: %d\r\n", unixTime);
+		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d UTC\r\n", (1900+ts.tm_year), (1+ts.tm_mon), ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec);
 	} else if (argc == 1) {
 		time_t newtime = atoi(argv[0]);
 		rtcSetTimeUnixSec(&RTCD1, newtime);
+		struct tm ts = *gmtime(&newtime);
 		chprintf(chp, "New time is: %d\r\n", newtime);
+		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d UTC\r\n", (1900+ts.tm_year), (1+ts.tm_mon), ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec);
+
 	}
 }
 
 static void cmd_mem(BaseSequentialStream *chp, int argc, char *argv[]) {
-	size_t n, size;
+//	size_t n, size;
 	(void) argv;
 	(void) argc;
 
@@ -303,21 +299,20 @@ static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
 }
 
 static const ShellCommand shCmds[] = {
-  {"test",      cmd_test},
-  {"helpme",	cmd_help},
-  {"gyrodata",	cmd_gyrodata},
-  {"magdata", cmd_magdata},
-  {"adjust", cmd_adjust},
-  {"nextsch", cmd_nextsch},
-  {"time", cmd_time},
-  {"free", cmd_mem},
-  {"reboot", cmd_reboot},
-  {NULL, NULL}
+	{"test",      cmd_test},
+	{"gyrodata",	cmd_gyrodata},
+	{"magdata", cmd_magdata},
+	{"adjust", cmd_adjust},
+	{"nextsch", cmd_nextsch},
+	{"time", cmd_time},
+	{"free", cmd_mem},
+	{"reboot", cmd_reboot},
+	{NULL, NULL}
 };
 
 static const ShellConfig shCfg = {
-  (BaseSequentialStream *)&SDU1,
-  shCmds
+	(BaseSequentialStream *)&SDU1,
+	shCmds
 };
 
 static WORKING_AREA(waThreadBlink, 128);
@@ -342,16 +337,17 @@ static msg_t ThreadBlink(void *arg) {
 			i++;
 		}
 		else if (schema == 1) {
-			uint8_t j = GPIOE_LED4_BLUE;
-			for (j=GPIOE_LED4_BLUE; j<=GPIOE_LED6_GREEN; j++) {
-				palTogglePad(GPIOE,  j);
+			if (i > GPIOE_LED6_GREEN) {
+				i = GPIOE_LED4_BLUE;
 			}
+			palTogglePad(GPIOE, i);
+			i++;
 		}
 		else if (schema == 2) {
 			if (i > GPIOE_LED6_GREEN) { 
 				i = GPIOE_LED4_BLUE;
 			}
-			if (i+3 <= 15) {
+			if (i+3 <= GPIOE_LED6_GREEN) {
 				palSetPad(GPIOE, i+3);
 			}
 			else {
@@ -368,26 +364,24 @@ static msg_t ThreadBlink(void *arg) {
 int main(void) {
 	Thread *sh = NULL;
 
-    halInit();
-    chSysInit();
+	halInit();
+	chSysInit();
 
-    sduObjectInit(&SDU1);
-    sduStart(&SDU1, &serusbcfg);
-
-    usbDisconnectBus(serusbcfg.usbp);
-    chThdSleepMilliseconds(1000);
-    usbStart(serusbcfg.usbp, &usbcfg);
-    usbConnectBus(serusbcfg.usbp);
-
-
-    spiStart(&SPID1, &spi1cfg);
-    i2cStart(&I2CD1, &i2cconfig);
-    initGyro();
-    initAccel();
-    initMag();
 	shellInit();
-	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7));
-	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7));
+	
+	usbDisconnectBus(serusbcfg.usbp);
+	chThdSleepMilliseconds(1000);
+	usbStart(serusbcfg.usbp, &usbcfg);
+	usbConnectBus(serusbcfg.usbp);
+	
+	sduObjectInit(&SDU1);
+	sduStart(&SDU1, &serusbcfg);
+
+	spiStart(&SPID1, &spi1cfg);
+	i2cStart(&I2CD1, &i2cconfig);
+	initGyro();
+	initAccel();
+	initMag();
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 
     while (TRUE) {
@@ -409,6 +403,6 @@ int main(void) {
             chprintf((BaseSequentialStream *)&SDU1, "%f %f %f\n", magData[0], magData[1], magData[2]);
         }
 		*/
-    }
+	}
 	return 0; // never returns, lol
 }
