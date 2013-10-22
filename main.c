@@ -29,12 +29,30 @@
 #include "chthreads.h"
 // testing rtc
 #include "chrtclib.h"
-// for compass demo
-#include <math.h>
-#define PI 3.1415f
 
+// FIXME :: awaiting fix from the ChibiOS/RT team
+/*
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
+*/
+// This didn't work =(^U IT'S ALIVE! ALIVE!!!
+#define USB_GPIO_PORT GPIOA
+#define USBDM_BIT GPIOA_USB_DM
+#define USBDP_BIT GPIOA_USB_DP
+
+void usb_lld_disconnect_bus(USBDriver *usbp)
+{
+  palClearPort(USB_GPIO_PORT, (1<<USBDM_BIT) | (1<<USBDP_BIT));
+  palSetPadMode(USB_GPIO_PORT, USBDM_BIT, PAL_MODE_OUTPUT_PUSHPULL);
+  palSetPadMode(USB_GPIO_PORT, USBDP_BIT, PAL_MODE_OUTPUT_PUSHPULL);
+}
+
+void usb_lld_connect_bus(USBDriver *usbp)
+{
+  palClearPort(USB_GPIO_PORT, (1<<USBDM_BIT) | (1<<USBDP_BIT));
+  palSetPadMode(USB_GPIO_PORT, USBDM_BIT, PAL_MODE_ALTERNATE(14));
+  palSetPadMode(USB_GPIO_PORT, USBDP_BIT, PAL_MODE_ALTERNATE(14));
+}
 
 /* Virtual serial port over USB.*/
 SerialUSBDriver SDU1;
@@ -58,6 +76,7 @@ static const I2CConfig i2cconfig = {
 	0,
 	0
 };
+
 /*
 static uint8_t readByteSPI(uint8_t reg)
 {
@@ -355,69 +374,7 @@ static msg_t ThreadBlink(void *arg) {
 			palClearPad(GPIOE, i);
 			i++;
 		}
-		else if (schema == 3) { // compass
-			uint8_t j;
-			for (j = GPIOE_LED4_BLUE; j < GPIOE_LED6_GREEN; j++) {
-				palClearPad(GPIOE, j);
-			}
-			float magdata[3];
-			float accdata[3];
-			readMag(magdata);
-			readAccel(accdata);
-			float fNormAcc = sqrt(pow(accdata[0], 2) + pow(accdata[1], 2) + pow(accdata[2], 2));
-			float fSinRoll = -(accdata[1])/(fNormAcc);
-			float fCosRoll = sqrt(1-pow(fSinRoll, 2));
-			float fSinPitch = (accdata[0])/(fNormAcc);
-			float fCosPitch = sqrt(1-pow(fSinPitch, 2));
-			float RollAng, PitchAng;
-			if (fSinRoll > 0) {
-				if (fCosRoll > 0) {
-					RollAng = acos(fCosRoll)*180/PI;
-				}
-				else {
-					RollAng = acos(fCosRoll)*180/PI+180;
-				}
-			}
-			else {
-				if (fCosRoll > 0) {
-					RollAng = acos(fCosRoll)*180/PI+360;
-				}
-				else {
-					RollAng = acos(fCosRoll)*180/PI+180;
-				}
-			}
-
-			if (fSinPitch > 0) {
-				if (fCosPitch > 0) {
-					PitchAng = acos(fCosPitch)*180/PI;
-				}
-				else {
-					PitchAng = acos(fCosPitch)*180/PI+180;
-				}
-			}
-			else {
-				if (fCosPitch > 0) {
-					PitchAng = acos(fCosPitch)*180/PI+360;
-				}
-				else {
-					PitchAng = acos(fCosPitch)*180/PI+180;
-				}
-			}
-
-			if (RollAng >= 360) {
-				RollAng += 360;
-			}
-			if (PitchAng >= 360) {
-				PitchAng += 360;
-			}
-
-			float fTiltedX = magdata[0]*fCosPitch + magdata[2]*fSinPitch;
-			float fTiltedY = magdata[0]*fSinPitch + magdata[1]*fCosRoll - magdata[1]*fSinRoll*fSinPitch;
-			float HeadingValue = atan2f((float)fTiltedY, (float)fTiltedX)*180.0f/PI;
-			if (HeadingValue < 0) {
-				HeadingValue += 360;
-			}
-
+		else if (schema == 3) { 
 		}
 		chThdSleepMilliseconds(125);
 	}
