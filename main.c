@@ -42,16 +42,18 @@
 
 void usb_lld_disconnect_bus(USBDriver *usbp)
 {
-  palClearPort(USB_GPIO_PORT, (1<<USBDM_BIT) | (1<<USBDP_BIT));
-  palSetPadMode(USB_GPIO_PORT, USBDM_BIT, PAL_MODE_OUTPUT_PUSHPULL);
-  palSetPadMode(USB_GPIO_PORT, USBDP_BIT, PAL_MODE_OUTPUT_PUSHPULL);
+	(void) usbp;
+	palClearPort(USB_GPIO_PORT, (1<<USBDM_BIT) | (1<<USBDP_BIT));
+	palSetPadMode(USB_GPIO_PORT, USBDM_BIT, PAL_MODE_OUTPUT_PUSHPULL);
+	palSetPadMode(USB_GPIO_PORT, USBDP_BIT, PAL_MODE_OUTPUT_PUSHPULL);
 }
 
 void usb_lld_connect_bus(USBDriver *usbp)
 {
-  palClearPort(USB_GPIO_PORT, (1<<USBDM_BIT) | (1<<USBDP_BIT));
-  palSetPadMode(USB_GPIO_PORT, USBDM_BIT, PAL_MODE_ALTERNATE(14));
-  palSetPadMode(USB_GPIO_PORT, USBDP_BIT, PAL_MODE_ALTERNATE(14));
+	(void) usbp;
+	palClearPort(USB_GPIO_PORT, (1<<USBDM_BIT) | (1<<USBDP_BIT));
+	palSetPadMode(USB_GPIO_PORT, USBDM_BIT, PAL_MODE_ALTERNATE(14));
+	palSetPadMode(USB_GPIO_PORT, USBDP_BIT, PAL_MODE_ALTERNATE(14));
 }
 
 /* Virtual serial port over USB.*/
@@ -60,7 +62,7 @@ SerialUSBDriver SDU1;
 static float mdps_per_digit = 8.75;
 
 uint8_t schema = 0;
-#define MAXSCH 3
+#define MAXSCH 2
 
 static const SPIConfig spi1cfg = {
 	NULL,
@@ -240,18 +242,6 @@ static void cmd_magdata(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
-static void cmd_nextsch(BaseSequentialStream *chp, int argc, char *argv[]) {
-	(void) argc;
-	(void) argv;
-	if (schema < MAXSCH) {
-		schema++;
-	}
-	else {
-		schema = 0;
-	}
-	chprintf(chp, "Blinking schema set to %d\r\n", schema);
-}
-
 static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
 	float gyrodata[2][3];
 	(void) argc;
@@ -316,12 +306,25 @@ static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
 	NVIC_SystemReset();
 }
 
+static void cmd_schema(BaseSequentialStream *chp, int argc, char *argv[]) {
+	if (argc == 0) {
+		chprintf(chp, "Current blink schema is %d\r\n", schema);
+	} else {
+		uint8_t newsch = atoi(argv[0]);
+		if (newsch > MAXSCH) {
+			newsch = schema;
+		}
+		schema = newsch;
+		chprintf(chp, "Set blinking schema to %d\r\n", schema);
+	}
+}
+
 static const ShellCommand shCmds[] = {
 	{"test",      cmd_test},
 	{"gyrodata",	cmd_gyrodata},
 	{"magdata", cmd_magdata},
 	{"adjust", cmd_adjust},
-	{"nextsch", cmd_nextsch},
+	{"schema", cmd_schema},
 	{"time", cmd_time},
 	{"free", cmd_mem},
 	{"reboot", cmd_reboot},
@@ -332,6 +335,26 @@ static const ShellConfig shCfg = {
 	(BaseSequentialStream *)&SDU1,
 	shCmds
 };
+
+static WORKING_AREA(waThreadButton, 128);
+static msg_t ThreadButton(void *arg) {
+	(void) arg;
+
+	chRegSetThreadName("button");
+
+	while (TRUE) {
+		while (!palReadPad(GPIOA, GPIOA_BUTTON)) {
+		}
+		if (schema == MAXSCH) {
+			schema = 0;
+		} else {
+			schema++;
+		}
+		chprintf((BaseSequentialStream *)&SDU1, "Schema set to %d\r\n", schema);
+		chThdSleepMilliseconds(500);
+	}
+	return 0; // nevar forget
+}
 
 static WORKING_AREA(waThreadBlink, 128);
 
@@ -403,6 +426,7 @@ int main(void) {
 	initAccel();
 	initMag();
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
+	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
 
     while (TRUE) {
 		if (!sh) {
