@@ -439,10 +439,18 @@ int main(void) {
 	initGyro();
 	initAccel();
 	initMag();
+	
+	/*
+	pwmStart(&PWMD4, &pwmcfg);
+	pwmEnableChannel(&PWMD4, 3, 5000);
 
-//	pwmStart(&PWMD4, &pwmcfg);
-//	pwmEnableChannel(&PWMD4, 3, 5000);
-		chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
+	uint8_t i = 1;
+	for (i = 1; i < 20; i++) {
+		palSetPadMode(GPIOE, GPIOE_LED4_BLUE, PAL_MODE_ALTERNATE(i));
+		chprintf((BaseSequentialStream *)&SDU1, "Mode %d\r\n", i);
+		chThdSleepMilliseconds(3000);
+	}*/
+	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
 
     while (TRUE) {
