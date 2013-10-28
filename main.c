@@ -404,6 +404,20 @@ static msg_t ThreadBlink(void *arg) {
 	return 0; // never returns
 }
 
+static PWMConfig pwmcfg = {
+	10000,
+	10000,
+	NULL,
+	{
+		{PWM_OUTPUT_DISABLED, NULL},
+		{PWM_OUTPUT_DISABLED, NULL},
+		{PWM_OUTPUT_DISABLED, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL}
+	},
+	0
+};
+
+
 int main(void) {
 	Thread *sh = NULL;
 
@@ -425,7 +439,10 @@ int main(void) {
 	initGyro();
 	initAccel();
 	initMag();
-	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
+
+//	pwmStart(&PWMD4, &pwmcfg);
+//	pwmEnableChannel(&PWMD4, 3, 5000);
+		chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
 
     while (TRUE) {
