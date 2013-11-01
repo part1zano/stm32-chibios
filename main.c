@@ -405,15 +405,16 @@ static msg_t ThreadBlink(void *arg) {
 }
 
 static PWMConfig pwmcfg = {
-	10000,
-	10000,
+	200000,
+	1000,
 	NULL,
 	{
-		{PWM_OUTPUT_DISABLED, NULL},
-		{PWM_OUTPUT_DISABLED, NULL},
-		{PWM_OUTPUT_DISABLED, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
 		{PWM_OUTPUT_ACTIVE_HIGH, NULL}
 	},
+	0,
 	0
 };
 
@@ -440,18 +441,18 @@ int main(void) {
 	initAccel();
 	initMag();
 	
-	/*
-	pwmStart(&PWMD4, &pwmcfg);
-	pwmEnableChannel(&PWMD4, 3, 5000);
-
-	uint8_t i = 1;
-	for (i = 1; i < 20; i++) {
-		palSetPadMode(GPIOE, GPIOE_LED4_BLUE, PAL_MODE_ALTERNATE(i));
-		chprintf((BaseSequentialStream *)&SDU1, "Mode %d\r\n", i);
-		chThdSleepMilliseconds(3000);
-	}*/
-	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
-	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
+	pwmStart(&PWMD1, &pwmcfg);
+	pwmEnableChannel(&PWMD1, 0, 5000);
+	pwmEnableChannel(&PWMD1, 1, 5000);
+	pwmEnableChannel(&PWMD1, 2, 5000);
+	pwmEnableChannel(&PWMD1, 3, 5000);
+	uint8_t i = 8;
+	for (i = 8; i < 15; i++) {
+		palSetPadMode(GPIOE, i, PAL_MODE_ALTERNATE(2));
+	}
+	//chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
+	//chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
+	i = 0;
 
     while (TRUE) {
 		if (!sh) {
@@ -461,7 +462,13 @@ int main(void) {
 			chThdRelease(sh);
 			sh = NULL;
 		}
-		chThdSleepMilliseconds(1000);
+		pwmEnableChannel(&PWMD1, 0, PWM_PERCENTAGE_TO_WIDTH(&PWMD1, i*1000));
+		chThdSleepMilliseconds(2000);
+		i++;
+		if (i > 10) {
+			i = 0;
+		}
+		chprintf((BaseSequentialStream *)&SDU1, "i is %d\r\n", i);
 		/*
 	float gyroData[3];
         float accelData[3];
