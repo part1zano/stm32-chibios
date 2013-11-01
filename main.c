@@ -29,6 +29,7 @@
 #include "chthreads.h"
 // testing rtc
 #include "chrtclib.h"
+#include "bmp085.h"
 
 // FIXME :: awaiting fix from the ChibiOS/RT team
 /*
@@ -319,6 +320,25 @@ static void cmd_schema(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
+uint8_t bmp085_status = 0;
+
+static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
+	(void) argc;
+	(void) argv;
+	uint16_t i;
+	int32_t pressure;
+	if (bmp085_status == 0) {
+		for (i = 51; i <= 128; i++) {
+			pressure = bmp085_read_press(i);
+			chprintf(chp, "cr_value=%d, Pressure is %ld\r\n", i, pressure);
+		}
+		int32_t temp = bmp085_read_temp();
+		chprintf(chp, "Temperature is: %ld\r\n", temp);
+	} else {
+		chprintf(chp, "ERROR! bmp085 initialization returned %d\r\n", bmp085_status);
+	}
+}
+
 static const ShellCommand shCmds[] = {
 	{"test",      cmd_test},
 	{"gyrodata",	cmd_gyrodata},
@@ -328,6 +348,7 @@ static const ShellCommand shCmds[] = {
 	{"time", cmd_time},
 	{"free", cmd_mem},
 	{"reboot", cmd_reboot},
+	{"bmp", cmd_pressure},
 	{NULL, NULL}
 };
 
@@ -422,9 +443,13 @@ int main(void) {
 
 	spiStart(&SPID1, &spi1cfg);
 	i2cStart(&I2CD1, &i2cconfig);
+	i2cStart(&I2CD2, &i2cconfig);
 	initGyro();
 	initAccel();
 	initMag();
+	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(4));
+	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(4));
+	bmp085_status = bmp085_init();
 	
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
