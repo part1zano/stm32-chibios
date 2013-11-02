@@ -80,6 +80,12 @@ static const I2CConfig i2cconfig = {
 	0
 };
 
+static const I2CConfig i2cconf2 = {
+	1,
+	100000,
+	1,
+};
+
 /*
 static uint8_t readByteSPI(uint8_t reg)
 {
@@ -162,7 +168,10 @@ static uint8_t readAccel(float* data)
 	uint8_t out[7];
 	i2cAcquireBus(&I2CD1);
 	msg_t f = i2cMasterTransmitTimeout(&I2CD1, 0x19, &start_reg, 1, out, 7, TIME_INFINITE);
-	(void)f;
+	if (f != RDY_OK) {
+		i2cReleaseBus(&I2CD1);
+		return 0;
+	}
 	i2cReleaseBus(&I2CD1);
 	if (out[0] & 0x8) {
 		int16_t val_x = (out[2] << 8) | out[1];
@@ -182,7 +191,10 @@ static uint8_t readMag(float* data)
 	uint8_t out[7];
 	i2cAcquireBus(&I2CD1);
 	msg_t f = i2cMasterTransmitTimeout(&I2CD1, 0x1E, &start_reg, 1, out, 7, TIME_INFINITE);
-	(void)f;
+	if (f != RDY_OK) {
+		i2cReleaseBus(&I2CD1);
+		return 0;
+	}
 	i2cReleaseBus(&I2CD1);
 	//out[6] doesn't seem to reflect actual new data, so just push out every time
 	int16_t val_x = (out[0] << 8) | out[1];
@@ -216,10 +228,10 @@ static void cmd_gyrodata(BaseSequentialStream *chp, int argc, char *argv[]) {
 	uint32_t i = 0;
 	chprintf(chp, " Number 1\t Number 2\t Number 3\t #\r\n");
 	for (i = 0; i < times; i++) {
+		chThdSleepMilliseconds(delay);
 		if (readGyro(gyrodata)) {
 			chprintf(chp, " %f\t %f\t %f\t %d\r\n", gyrodata[0], gyrodata[1], gyrodata[2], i);
 		}
-		chThdSleepMilliseconds(delay);
 	}
 }
 
@@ -236,10 +248,10 @@ static void cmd_magdata(BaseSequentialStream *chp, int argc, char *argv[]) {
 	uint32_t i = 0;
 	chprintf(chp, " Number 1\t Number 2\t Number 3\t #\r\n");
 	for (i = 0; i < times; i++) {
+		chThdSleepMilliseconds(delay);
 		if (readMag(magdata)) {
 			chprintf(chp, " %f\t %f\t %f\t %d\r\n", magdata[0], magdata[1], magdata[2], i);
 		}
-		chThdSleepMilliseconds(delay);
 	}
 }
 
@@ -325,14 +337,15 @@ uint8_t bmp085_status = 0;
 static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
-	uint16_t i;
 	int32_t pressure;
-	if (bmp085_status == 0) {
-		for (i = 51; i <= 128; i++) {
+	if (bmp085_status == 0) {/*
+		for (i = 0; i <= 0xff; i++) {
 			pressure = bmp085_read_press(i);
 			chprintf(chp, "cr_value=%d, Pressure is %ld\r\n", i, pressure);
-		}
+		}*/
 		int32_t temp = bmp085_read_temp();
+		pressure = bmp085_read_press(100);
+		chprintf(chp, "Pressure is %ld\r\n", pressure);
 		chprintf(chp, "Temperature is: %ld\r\n", temp);
 	} else {
 		chprintf(chp, "ERROR! bmp085 initialization returned %d\r\n", bmp085_status);
@@ -378,7 +391,6 @@ static msg_t ThreadButton(void *arg) {
 }
 
 static WORKING_AREA(waThreadBlink, 128);
-
 static msg_t ThreadBlink(void *arg) {
 	(void) arg;
 
@@ -443,12 +455,12 @@ int main(void) {
 
 	spiStart(&SPID1, &spi1cfg);
 	i2cStart(&I2CD1, &i2cconfig);
+	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(4));
+	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(4));
 	i2cStart(&I2CD2, &i2cconfig);
 	initGyro();
 	initAccel();
 	initMag();
-	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(4));
-	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(4));
 	bmp085_status = bmp085_init();
 	
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
