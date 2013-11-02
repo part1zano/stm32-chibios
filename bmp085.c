@@ -47,7 +47,6 @@
 #include <ch.h>
 #include <hal.h>
 
-extern SDU1;
 #define I2CD I2CD2 // ugly, but should work
 
 #include "bmp085.h"
