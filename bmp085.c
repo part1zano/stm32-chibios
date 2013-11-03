@@ -47,7 +47,7 @@
 #include <ch.h>
 #include <hal.h>
 
-#define I2CD I2CD2 // ugly, but should work
+#define I2CD I2CD1 // ugly, but should work
 
 #include "bmp085.h"
 

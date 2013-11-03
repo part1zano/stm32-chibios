@@ -455,9 +455,6 @@ int main(void) {
 
 	spiStart(&SPID1, &spi1cfg);
 	i2cStart(&I2CD1, &i2cconfig);
-	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(4));
-	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(4));
-	i2cStart(&I2CD2, &i2cconfig);
 	initGyro();
 	initAccel();
 	initMag();
