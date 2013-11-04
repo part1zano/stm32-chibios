@@ -337,16 +337,17 @@ uint8_t bmp085_status = 0;
 static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
-	int32_t pressure;
 	if (bmp085_status == 0) {/*
 		for (i = 0; i <= 0xff; i++) {
 			pressure = bmp085_read_press(i);
 			chprintf(chp, "cr_value=%d, Pressure is %ld\r\n", i, pressure);
 		}*/
 		int32_t temp = bmp085_read_temp();
-		pressure = bmp085_read_press(100);
-		chprintf(chp, "Pressure is %ld\r\n", pressure);
-		chprintf(chp, "Temperature is: %ld\r\n", temp);
+		float temperature = temp/10.0;
+		int32_t pressure = bmp085_read_press(100);
+		float mm = pressure/133.322f;
+		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", pressure, mm);
+		chprintf(chp, "Temperature is: %3.3f\r\n", temperature);
 	} else {
 		chprintf(chp, "ERROR! bmp085 initialization returned %d\r\n", bmp085_status);
 	}
