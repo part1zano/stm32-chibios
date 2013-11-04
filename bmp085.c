@@ -275,7 +275,7 @@ int32_t bmp085_read_press(int8_t cr_value)
 	x1 = (x1*3038)/65536;
 	x2 = (-7357*pressure)/65536;
 	pressure = pressure + (x1 + x2 + 3791)/16;
-	pressure = (uint32_t) (pressure * 3.3118); // an ugly and dirty hack, but that's all I could think of
+//	pressure = (uint32_t) (pressure * 3.3118); // an ugly and dirty hack, but that's all I could think of
 	// Actually, lack of calibration matters here :(
 	return pressure;
 }	
