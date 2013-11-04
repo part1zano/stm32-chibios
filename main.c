@@ -29,9 +29,9 @@
 #include "chthreads.h"
 // testing rtc
 #include "chrtclib.h"
+// for barometer
 #include "bmp085.h"
 
-// FIXME :: awaiting fix from the ChibiOS/RT team
 /*
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
@@ -64,6 +64,14 @@ static float mdps_per_digit = 8.75;
 
 uint8_t schema = 0;
 #define MAXSCH 2
+#define POLLER_TIMEOUT 100
+
+typedef struct poller_data {
+	uint32_t temp;
+	uint32_t press;
+} pollerData;
+
+pollerData PollerData;
 
 static const SPIConfig spi1cfg = {
 	NULL,
@@ -337,17 +345,12 @@ uint8_t bmp085_status = 0;
 static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
-	if (bmp085_status == 0) {/*
-		for (i = 0; i <= 0xff; i++) {
-			pressure = bmp085_read_press(i);
-			chprintf(chp, "cr_value=%d, Pressure is %ld\r\n", i, pressure);
-		}*/
-		int32_t temp = bmp085_read_temp();
-		float temperature = temp/10.0;
-		int32_t pressure = bmp085_read_press();
-		float mm = pressure/133.322f;
-		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", pressure, mm);
-		chprintf(chp, "Temperature is: %3.3f\r\n", temperature);
+	
+	if (bmp085_status == 0) {
+		float temperature = PollerData.temp/10.0;
+		float mm = PollerData.press/133.322f;
+		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", PollerData.press, mm);
+		chprintf(chp, "Temperature is: %3.3f C\r\n", temperature);
 	} else {
 		chprintf(chp, "ERROR! bmp085 initialization returned %d\r\n", bmp085_status);
 	}
@@ -370,6 +373,23 @@ static const ShellConfig shCfg = {
 	(BaseSequentialStream *)&SDU1,
 	shCmds
 };
+
+static WORKING_AREA(waPoller, 128);
+static msg_t ThreadPoller(void *arg) {
+	(void) arg;
+
+	chRegSetThreadName("poller");
+
+	while (TRUE) {
+		if (bmp085_status == 0) {
+			PollerData.temp = bmp085_read_temp();
+			PollerData.press = bmp085_read_press();
+			chThdSleepMilliseconds(POLLER_TIMEOUT);
+		}
+	}
+
+	return 0; // never returns
+}
 
 static WORKING_AREA(waThreadButton, 128);
 static msg_t ThreadButton(void *arg) {
@@ -441,6 +461,9 @@ static msg_t ThreadBlink(void *arg) {
 int main(void) {
 	Thread *sh = NULL;
 
+	PollerData.temp = 0;
+	PollerData.press = 0;
+
 	halInit();
 	chSysInit();
 
@@ -463,6 +486,7 @@ int main(void) {
 	
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
+	chThdCreateStatic(waPoller, sizeof(waPoller), NORMALPRIO, ThreadPoller, NULL);
 
     while (TRUE) {
 		if (!sh) {
