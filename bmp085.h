@@ -75,7 +75,7 @@ typedef struct bmp085_eprom_param
 
 int bmp085_init(void);
 int32_t bmp085_read_temp(void);
-int32_t bmp085_read_press(int8_t);
+int32_t bmp085_read_press(void);
 
 
 

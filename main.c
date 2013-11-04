@@ -344,7 +344,7 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 		}*/
 		int32_t temp = bmp085_read_temp();
 		float temperature = temp/10.0;
-		int32_t pressure = bmp085_read_press(100);
+		int32_t pressure = bmp085_read_press();
 		float mm = pressure/133.322f;
 		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", pressure, mm);
 		chprintf(chp, "Temperature is: %3.3f\r\n", temperature);

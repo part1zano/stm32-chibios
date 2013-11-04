@@ -213,7 +213,7 @@ int32_t bmp085_read_temp(void)
 	return temperature;
 }
 
-int32_t bmp085_read_press(int8_t cr_value)
+int32_t bmp085_read_press(void)
 {
 	int32_t upress;
 	int32_t x1,x2,x3;
@@ -225,7 +225,7 @@ int32_t bmp085_read_press(int8_t cr_value)
 	msg_t status = RDY_OK;
 	uint8_t buffer_tx[2];
 	uint8_t buffer_rx[3];
-	systime_t tmo = MS2ST(4);
+	systime_t tmo = MS2ST(4); 
 	
 	// Reading from I2C BUS
 	i2cAcquireBus(&I2CD);
@@ -248,8 +248,6 @@ int32_t bmp085_read_press(int8_t cr_value)
 	i2cReleaseBus(&I2CD);
 	
 	// Building value
-	/*
-	oss = (cr_value - 0x34) >> 6;*/
 	upress = (int32_t)((buffer_rx[0] << 16) | (buffer_rx[1] << 8) | buffer_rx[2]);
 	upress = upress >> (8-oss);/*
 	return upress;*/
@@ -259,7 +257,7 @@ int32_t bmp085_read_press(int8_t cr_value)
 	x1 = (param.b2 * ((b6 * b6)/4096))/2048;
 	x2 = (param.ac2 * b6)/2048;
 	x3 = x1 + x2;
-	b3 = ((param.ac1 * 4 + x3) << oss + 2)/4;
+	b3 = ((param.ac1 * 4 + x3) << (oss + 2))/4;
 	x1 = ((param.ac3)*b6)/8192;
 	x2 = (param.b1 * (b6*b6/4096))/65536;
 	x3 = ((x1 + x2) + 2)/4;
@@ -275,7 +273,7 @@ int32_t bmp085_read_press(int8_t cr_value)
 	x1 = (x1*3038)/65536;
 	x2 = (-7357*pressure)/65536;
 	pressure = pressure + (x1 + x2 + 3791)/16;
-//	pressure = (uint32_t) (pressure * 3.3118); // an ugly and dirty hack, but that's all I could think of
+	pressure = (uint32_t) (pressure * 3.3118); // an ugly and dirty hack, but that's all I could think of
 	// Actually, lack of calibration matters here :(
 	return pressure;
 }	
