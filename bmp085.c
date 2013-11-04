@@ -257,7 +257,16 @@ int32_t bmp085_read_press(void)
 	x1 = (param.b2 * ((b6 * b6)/4096))/2048;
 	x2 = (param.ac2 * b6)/2048;
 	x3 = x1 + x2;
-	b3 = ((param.ac1 * 4 + x3) << (oss + 2))/4;
+
+	if (oss == 3) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2) << 1;
+	} else if (oss == 2) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2);
+	} else if (oss == 1) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2) >> 1;
+	} else if (oss == 0) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2) >> 2;
+	}
 	x1 = ((param.ac3)*b6)/8192;
 	x2 = (param.b1 * (b6*b6/4096))/65536;
 	x3 = ((x1 + x2) + 2)/4;
@@ -273,8 +282,6 @@ int32_t bmp085_read_press(void)
 	x1 = (x1*3038)/65536;
 	x2 = (-7357*pressure)/65536;
 	pressure = pressure + (x1 + x2 + 3791)/16;
-	pressure = (uint32_t) (pressure * 3.3118); // an ugly and dirty hack, but that's all I could think of
-	// Actually, lack of calibration matters here :(
 	return pressure;
-}	
+}
 
