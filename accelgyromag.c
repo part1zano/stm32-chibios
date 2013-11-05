@@ -3,6 +3,8 @@
 #include "spi.h"
 #include "i2c.h"
 #include "accelgyromag.h"
+#define I2CD I2CD1
+#define SPID SPID1
 
 static float mdps_per_digit = 8.75;
 
