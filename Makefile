@@ -87,6 +87,7 @@ CSRC = $(PORTSRC) \
 	   $(CHIBIOS)/os/various/shell.c \
 	   $(CHIBIOS)/os/various/chrtclib.c \
 	   bmp085.c \
+	   accelgyromag.c \
        usbcfg.c \
        main.c
 
