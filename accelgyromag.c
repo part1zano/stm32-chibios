@@ -1,8 +1,7 @@
 #include "ch.h"
 #include "hal.h"
-#include "spi.h"
-#include "i2c.h"
 #include "accelgyromag.h"
+
 #define I2CD I2CD1
 #define SPID SPID1
 
