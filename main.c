@@ -370,6 +370,7 @@ int main(void) {
 			chThdRelease(sh);
 			sh = NULL;
 		}
+		chThdSleepMilliseconds(1000);
 		/*
 	float gyroData[3];
         float accelData[3];
