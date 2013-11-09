@@ -225,7 +225,7 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argv;
 	
 	if (bmp085_status == 0) {
-		float temperature = PollerData.temp/10.0;
+		float temperature = PollerData.temp/10.0f;
 		float mm = PollerData.press/133.322f;
 		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", PollerData.press, mm);
 		chprintf(chp, "Temperature is: %3.3f C\r\n", temperature);
