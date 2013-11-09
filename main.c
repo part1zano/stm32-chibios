@@ -33,6 +33,8 @@
 #include "bmp085.h"
 // for gyro, mag & accel
 #include "accelgyromag.h"
+// atoi
+#include <stdlib.h> 
 
 #define BMP085_I2CD I2CD1
 
