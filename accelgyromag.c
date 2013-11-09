@@ -2,8 +2,17 @@
 #include "hal.h"
 #include "accelgyromag.h"
 
+#ifndef AGM_I2CD
 #define I2CD I2CD1
+#else
+#define I2CD AGM_I2CD
+#endif
+
+#ifndef AGM_SPID
 #define SPID SPID1
+#else
+#define SPID AGM_SPID
+#endif
 
 static float mdps_per_digit = 8.75;
 

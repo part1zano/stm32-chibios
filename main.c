@@ -34,6 +34,8 @@
 // for gyro, mag & accel
 #include "accelgyromag.h"
 
+#define BMP085_I2CD I2CD1
+
 /*
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
