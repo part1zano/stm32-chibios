@@ -57,10 +57,6 @@
 
 static bmp085_param param;
 
-static i2cflags_t errors[11] = {0,0,0,0,0,0,0,0,0,0,0};
-static i2cflags_t t_errors[2] = {0,0};
-static i2cflags_t p_errors[2] = {0,0};
-
 int bmp085_init(void)
 {
 	msg_t status = RDY_OK;
@@ -72,102 +68,91 @@ int bmp085_init(void)
 
 	buffer_tx = BMP_AC1;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.ac1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[0] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 1;
 	}
+	param.ac1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC2;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.ac2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[1] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 2;
 	}
+	param.ac2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC3;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.ac3 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[2] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 3;
 	}
+	param.ac3 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC4;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.ac4 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[3] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 4;
 	}
+	param.ac4 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC5;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.ac5 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[4] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 5;
 	}
+	param.ac5 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC6;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.ac6 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[5] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 6;
 	}
+	param.ac6 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_B1;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.b1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[6] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 7;
 	}
+	param.b1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_B2;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.b2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[7] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 8;
 	}
+	param.b2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_MB;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.mb = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[8] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 9;
 	}
+	param.mb = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_MC;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.mc = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[9] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 10;
 	}
+	param.mc = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_MD;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx,1,buffer_rx,2,tmo);	
-	param.md = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	if (status != RDY_OK){
-		errors[10] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 11;
 	}
+	param.md = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	i2cReleaseBus(&I2CD);
 
@@ -192,14 +177,12 @@ int32_t bmp085_read_temp(void)
 	buffer_tx[1] = BMP_MODE_TEMP;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,buffer_tx,2,NULL,0,tmo);
 	if (status != RDY_OK){
-		t_errors[0] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 273;
 	}
 	buffer_tx[0] = BMP_DATA;
 	status = i2cMasterTransmitTimeout(&I2CD,BMP_ADDR,&buffer_tx[0],1,buffer_rx,2,tmo);
 	if (status != RDY_OK){
-		t_errors[1] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 275;
 	}
@@ -237,7 +220,6 @@ int32_t bmp085_read_press(void)
 	buffer_tx[1] = BMP_MODE_PR0+(oss<<6);
 	status = i2cMasterTransmitTimeout(&I2CD, BMP_ADDR, buffer_tx, 2, NULL, 0, tmo);
 	if (status != RDY_OK) {
-		p_errors[0] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 22;
 	}
@@ -245,7 +227,6 @@ int32_t bmp085_read_press(void)
 	buffer_tx[0] = BMP_DATA;
 	status = i2cMasterTransmitTimeout(&I2CD, BMP_ADDR, &buffer_tx[0], 1, buffer_rx, 3, tmo);
 	if (status != RDY_OK) {
-		p_errors[1] = i2cGetErrors(&I2CD);
 		i2cReleaseBus(&I2CD);
 		return 2;
 	}
