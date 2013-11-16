@@ -2,3 +2,10 @@
 
 #define AGM_I2CD I2CD1
 #define AGM_SPID SPID1
+
+#define LCD3310_RES_PIN 11
+#define LCD3310_RES_PORT GPIOB
+#define LCD3310_DC_PIN 14
+#define LCD3310_DC_PORT GPIOB
+
+
