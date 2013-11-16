@@ -47,8 +47,9 @@
 #include <ch.h>
 #include <hal.h>
 #include "bmp085.h"
+#include "hw.h"
 
-#ifndef BMP085_I2CD
+#ifndef BMP085_I2CD 
 #define BMP085_I2CD I2CD1 
 #endif
 

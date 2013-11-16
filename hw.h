@@ -1,0 +1,4 @@
+#define BMP085_I2CD I2CD1
+
+#define AGM_I2CD I2CD1
+#define AGM_SPID SPID1

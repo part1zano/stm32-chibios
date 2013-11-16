@@ -1,6 +1,8 @@
 #include "ch.h"
 #include "hal.h"
 #include "accelgyromag.h"
+#include "hw.h"
+
 
 #ifndef AGM_I2CD
 #define AGM_I2CD I2CD1
