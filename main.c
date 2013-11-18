@@ -70,7 +70,7 @@ uint8_t schema = 0;
 #define POLLER_TIMEOUT 5000
 #define TZ_HOURS 4
 #define TZ_MINUTES 0
-
+#define TZ_STR "MSK"
 
 typedef struct {
 	uint32_t temp;
@@ -187,13 +187,13 @@ static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 		time_t unixTime = rtcGetTimeUnixSec(&RTCD1);
 		struct tm *ts = gmtime(&unixTime);
 		chprintf(chp, "current rtc time: %d\r\n", unixTime);
-		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d UTC\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec);
+		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d %s\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, TZ_STR);
 	} else if (argc == 1) {
 		time_t newtime = atoi(argv[0]) + 3600*TZ_HOURS + TZ_MINUTES;
 		rtcSetTimeUnixSec(&RTCD1, newtime);
-		struct tm ts = *gmtime(&newtime);
+		struct tm *ts = gmtime(&newtime);
 		chprintf(chp, "New time is: %d\r\n", newtime);
-		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d UTC\r\n", (1900+ts.tm_year), (1+ts.tm_mon), ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec);
+		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d %s\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, TZ_STR);
 	}
 }
 
