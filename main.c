@@ -82,8 +82,8 @@ poller_data PollerData;
 static const SPIConfig spi2cfg = {
 	NULL,
 	/* HW dependent part.*/
-	GPIOB,
-	12,
+	GPIOE,
+	GPIOE_SPI1_CS,
 	
 	SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA,
 	0
@@ -297,18 +297,18 @@ static const uint8_t lcd_img[504] = {
 	
 	chprintf(chp, "Saying something on lcd\r\n");
 	int i;
-	if (SPID2.state != SPI_READY) {
+	if (SPID1.state != SPI_READY) {
 		return;
-	}
+	}/*
 	lcd3310SetPosXY(&SPID1, 0, 0);
 	for (i = 1; i < 8; i++) {
-		lcd3310WriteChar(&SPID2, (uint8_t)ch);
-	}/*
-	for (i = 0; i < 504; i++) {
-		lcd3310WriteByte(&SPID2, lcd_img[i], LCD3310_SEND_DATA);
+		lcd3310WriteChar(&SPID1, (uint8_t)ch);
 	}*/
+	for (i = 0; i < 504; i++) {
+		lcd3310WriteByte(&SPID1, lcd_img[i], LCD3310_SEND_DATA);
+	}
 	chprintf(chp, "wrote %c to lcd\r\n", ch);
-	if (SPID2.state != SPI_READY) {
+	if (SPID1.state != SPI_READY) {
 		chprintf(chp, "with errors\r\n");
 	}
 }
@@ -436,19 +436,16 @@ int main(void) {
 	sduStart(&SDU1, &serusbcfg);
 
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL); 
-	palSetPadMode(GPIOB, 12, PAL_MODE_ALTERNATE(5));
-	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5));
-	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5));
-	palSetPadMode(GPIOB, 15, PAL_MODE_ALTERNATE(5));
+	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(5));
 
 	spiStart(&SPID1, &spi1cfg);
-	spiStart(&SPID2, &spi2cfg);
+	spiStart(&SPID1, &spi2cfg);
 	i2cStart(&I2CD1, &i2cconfig);
 	initGyro();
 	initAccel();
 	initMag();
 	bmp085_status = bmp085_init();
-	lcd3310Init(&SPID2);
+	lcd3310Init(&SPID1);
 	
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
