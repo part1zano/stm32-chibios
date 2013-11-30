@@ -79,16 +79,6 @@ typedef struct {
 
 poller_data PollerData;
 
-static const SPIConfig spi2cfg = {
-	NULL,
-	/* HW dependent part.*/
-	GPIOE,
-	GPIOE_SPI1_CS,
-	
-	SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA,
-	0
-};
-
 static const SPIConfig spi1cfg = {
 	NULL,
 	/* HW dependent part.*/
@@ -299,11 +289,7 @@ static const uint8_t lcd_img[504] = {
 	int i;
 	if (SPID1.state != SPI_READY) {
 		return;
-	}/*
-	lcd3310SetPosXY(&SPID1, 0, 0);
-	for (i = 1; i < 8; i++) {
-		lcd3310WriteChar(&SPID1, (uint8_t)ch);
-	}*/
+	}
 	for (i = 0; i < 504; i++) {
 		lcd3310WriteByte(&SPID1, lcd_img[i], LCD3310_SEND_DATA);
 	}
@@ -436,10 +422,8 @@ int main(void) {
 	sduStart(&SDU1, &serusbcfg);
 
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL); 
-	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(5));
 
 	spiStart(&SPID1, &spi1cfg);
-	spiStart(&SPID1, &spi2cfg);
 	i2cStart(&I2CD1, &i2cconfig);
 	initGyro();
 	initAccel();
@@ -460,16 +444,6 @@ int main(void) {
 			sh = NULL;
 		}
 		chThdSleepMilliseconds(1000);
-		/*
-	float gyroData[3];
-        float accelData[3];
-        float magData[3];
-        if (readGyro(gyroData) && readAccel(accelData) && readMag(magData)) {
-            chprintf((BaseSequentialStream *)&SDU1, "%f %f %f ", gyroData[0], gyroData[1], gyroData[2]);
-            chprintf((BaseSequentialStream *)&SDU1, "%f %f %f ", accelData[0], accelData[1], accelData[2]);
-            chprintf((BaseSequentialStream *)&SDU1, "%f %f %f\n", magData[0], magData[1], magData[2]);
-        }
-		*/
 	}
 	return 0; // never returns, lol
 }
