@@ -75,6 +75,7 @@ uint8_t schema = 0;
 typedef struct {
 	uint32_t temp;
 	uint32_t press;
+	time_t uTime;
 } poller_data;
 
 poller_data PollerData;
@@ -328,7 +329,7 @@ static msg_t ThreadPoller(void *arg) {
 		if (bmp085_status == 0) {
 			PollerData.temp = bmp085_read_temp();
 			PollerData.press = bmp085_read_press();
-			PollerData.time = rtcGetTimeUnixSec(&RTCD1);
+			PollerData.uTime = rtcGetTimeUnixSec(&RTCD1);
 			chThdSleepMilliseconds(POLLER_TIMEOUT);
 		}
 	}
@@ -408,7 +409,7 @@ int main(void) {
 
 	PollerData.temp = 0;
 	PollerData.press = 0;
-	PollerData.time = 0;
+	PollerData.uTime = 0;
 
 	halInit();
 	chSysInit();
