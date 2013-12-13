@@ -229,6 +229,9 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	if (bmp085_status == 0) {
 		float temperature = PollerData.temp/10.0f;
 		float mm = PollerData.press/133.322f;
+		time_t unixTime = PollerData.uTime;
+		struct tm *ts =  gmtime(& unixTime); // XXX :: possibly, an unneeded variable unixTime
+		chprintf(chp, "By %d-%02d-%02d %02d:%02d:%02d %s\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, TZ_STR);
 		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", PollerData.press, mm);
 		chprintf(chp, "Temperature is: %3.3f C\r\n", temperature);
 	} else {
