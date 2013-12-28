@@ -35,7 +35,7 @@
 #include "accelgyromag.h"
 // atoi
 #include <stdlib.h> 
-#include "lcd3310.h"
+#include "lcd5110.h"
 
 /*
 #define usb_lld_connect_bus(usbp)
@@ -86,6 +86,14 @@ static const SPIConfig spi1cfg = {
 	GPIOE,
 	GPIOE_SPI1_CS,
 	SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA,
+	0
+};
+
+static const SPIConfig spi2cfg = {
+	NULL,
+	GPIOX, // XXX :: define GPIO PORT
+	GPIOX_SPI2_CS, // XXX :: define ChipSelect pin
+	NULL,
 	0
 };
 
@@ -430,6 +438,7 @@ int main(void) {
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL); 
 
 	spiStart(&SPID1, &spi1cfg);
+	spiStart(&SPID2, &spi2cfg);
 	i2cStart(&I2CD1, &i2cconfig);
 	initGyro();
 	initAccel();

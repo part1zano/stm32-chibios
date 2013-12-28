@@ -86,7 +86,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
 	   $(CHIBIOS)/os/various/shell.c \
 	   $(CHIBIOS)/os/various/chrtclib.c \
-	   $(CHIBIOS)/os/various/devices_lib/lcd/lcd3310.c \
+	   lcd5110.c \
 	   bmp085.c \
 	   accelgyromag.c \
        usbcfg.c \
@@ -122,8 +122,7 @@ ASMSRC = $(PORTASM)
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOS)/os/various/devices_lib/accel \
-         $(CHIBIOS)/os/various \
-		 $(CHIBIOS)/os/various/devices_lib/lcd \
+         $(CHIBIOS)/os/various 
 
 #
 # Project, sources and paths
