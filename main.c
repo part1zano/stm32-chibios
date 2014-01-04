@@ -326,8 +326,6 @@ static msg_t ThreadLCD(void *arg) {
 
 	chRegSetThreadName("LCD");
 	char out[9];
-	struct tm *ts;
-	time_t current_time;
 	while (TRUE) {
 		if (bmp085_status == 0) {
 			chsnprintf(out, sizeof(out), "%4.2f", PollerData.press/133.322);
@@ -335,11 +333,6 @@ static msg_t ThreadLCD(void *arg) {
 			lcd5110WriteText(&SPID2, out);
 			chsnprintf(out, sizeof(out), "%4.2f", PollerData.temp/10.0);
 			lcd5110SetPosXY(&SPID2, 30, 1);
-			lcd5110WriteText(&SPID2, out);
-			current_time = rtcGetTimeUnixSec(&RTCD1);
-			ts = gmtime(&current_time);
-			chsnprintf(out, sizeof(out), "%02d:%02d", ts->tm_hour, ts->tm_min);
-			lcd5110SetPosXY(&SPID2, 30, 3);
 			lcd5110WriteText(&SPID2, out);
 		}
 	}
