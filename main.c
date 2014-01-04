@@ -91,8 +91,8 @@ static const SPIConfig spi1cfg = {
 
 static const SPIConfig spi2cfg = {
 	NULL,
-	GPIOX, // XXX :: define GPIO PORT
-	GPIOX_SPI2_CS, // XXX :: define ChipSelect pin
+	GPIOB, // XXX :: define GPIO PORT
+	11, // XXX :: define ChipSelect pin
 	NULL,
 	0
 };
@@ -299,14 +299,14 @@ static const uint8_t lcd_img[504] = {
 	
 	chprintf(chp, "Saying something on lcd\r\n");
 	int i;
-	if (SPID1.state != SPI_READY) {
+	if (SPID2.state != SPI_READY) {
 		return;
 	}
 	for (i = 0; i < 504; i++) {
-		lcd3310WriteByte(&SPID1, lcd_img[i], LCD3310_SEND_DATA);
+		lcd5110WriteByte(&SPID2, lcd_img[i], LCD5110_SEND_DATA);
 	}
 	chprintf(chp, "wrote %c to lcd\r\n", ch);
-	if (SPID1.state != SPI_READY) {
+	if (SPID2.state != SPI_READY) {
 		chprintf(chp, "with errors\r\n");
 	}
 }
@@ -436,6 +436,10 @@ int main(void) {
 	sduStart(&SDU1, &serusbcfg);
 
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL); 
+	palSetPadMode(GPIOB, 10, PAL_MODE_OUTPUT_PUSHPULL);
+	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5));
+	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5));
+	palSetPadMode(GPIOB, 15, PAL_MODE_ALTERNATE(5));
 
 	spiStart(&SPID1, &spi1cfg);
 	spiStart(&SPID2, &spi2cfg);
@@ -444,11 +448,12 @@ int main(void) {
 	initAccel();
 	initMag();
 	bmp085_status = bmp085_init();
-	lcd3310Init(&SPID1);
+	lcd5110Init(&SPID2);
 	
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
 	chThdCreateStatic(waPoller, sizeof(waPoller), NORMALPRIO, ThreadPoller, NULL);
+	lcd5110WriteText(&SPID2, "hello");
 
     while (TRUE) {
 		if (!sh) {
