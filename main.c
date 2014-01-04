@@ -320,6 +320,26 @@ static msg_t ThreadButton(void *arg) {
 	return 0; // nevar forget
 }
 
+static WORKING_AREA(waThreadLCD, 128);
+static msg_t ThreadLCD(void *arg) {
+	(void) arg;
+
+	chRegSetThreadName("LCD");
+	char out[7];
+	while (TRUE) {
+		if (bmp085_status == 0) {
+			chsnprintf(out, sizeof(out), "%4.2f", PollerData.press/133.322);
+			lcd5110SetPosXY(&SPID2, 30, 0);
+			lcd5110WriteText(&SPID2, out);
+			chsnprintf(out, sizeof(out), "%4.2f", PollerData.temp/10.0);
+			lcd5110SetPosXY(&SPID2, 30, 1);
+			lcd5110WriteText(&SPID2, out);
+		}
+	}
+
+	return 0;
+}
+
 static WORKING_AREA(waThreadBlink, 128);
 static msg_t ThreadBlink(void *arg) {
 	(void) arg;
@@ -390,7 +410,6 @@ int main(void) {
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL); 
 	palSetPadMode(GPIOB, 10, PAL_MODE_OUTPUT_PUSHPULL);
 	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5));
-//	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5));
 	palSetPadMode(GPIOB, 14, PAL_MODE_OUTPUT_PUSHPULL);
 	palSetPadMode(GPIOB, 15, PAL_MODE_ALTERNATE(5));
 
@@ -402,12 +421,18 @@ int main(void) {
 	initMag();
 	bmp085_status = bmp085_init();
 	lcd5110Init(&SPID2);
-	
+	lcd5110SetPosXY(&SPID2, 1, 0);
+	lcd5110WriteText(&SPID2, "P :: ");
+	lcd5110SetPosXY(&SPID2, 1, 1);
+	lcd5110WriteText(&SPID2, "T :: ");
+//	lcd5110SetPosXY(&SPID2, 30, 0);
+//	lcd5110WriteText(&SPID2, "000");
+
+
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
 	chThdCreateStatic(waPoller, sizeof(waPoller), NORMALPRIO, ThreadPoller, NULL);
-//	lcd5110WriteByte(&SPID2, 0b01000010, LCD5110_SEND_CMD);
-	lcd5110WriteText(&SPID2, "hello");
+	chThdCreateStatic(waThreadLCD, sizeof(waThreadLCD), NORMALPRIO, ThreadLCD, NULL);
 
     while (TRUE) {
 		if (!sh) {
