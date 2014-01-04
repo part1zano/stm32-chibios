@@ -165,7 +165,7 @@ void lcd5110Init(SPIDriver *spip) {
 
   
   lcd5110WriteByte(spip, 0x06, LCD5110_SEND_CMD);  
-  lcd5110WriteByte(spip, 0x15, LCD5110_SEND_CMD);  
+  lcd5110WriteByte(spip, 0x14, LCD5110_SEND_CMD);  
   lcd5110WriteByte(spip, 0xbf, LCD5110_SEND_CMD);  
 
   lcd5110WriteByte(spip, 0x0c, LCD5110_SEND_CMD);
