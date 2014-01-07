@@ -273,10 +273,10 @@ void lcd5110Contrast (SPIDriver *spip, uint8_t contrast) {
  * @param[in] spip      pointer to the SPI interface
  * @param[in] strp      pointer to text
  */
-void lcd5110WriteText(SPIDriver *spip, const uint8_t * strp) {
+void lcd5110WriteText(SPIDriver *spip, const char * strp) {
 
   while ( *strp ) {
-    lcd5110WriteChar(spip, *strp);
+    lcd5110WriteChar(spip, (uint8_t )*strp);
     strp++;
   }
 }

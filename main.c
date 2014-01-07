@@ -91,8 +91,8 @@ static const SPIConfig spi1cfg = {
 
 static const SPIConfig spi2cfg = {
 	NULL,
-	GPIOB, // XXX :: define GPIO PORT
-	11, // XXX :: define ChipSelect pin
+	GPIOB, 
+	11,
 	SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA,
 	0
 };
@@ -335,6 +335,9 @@ static msg_t ThreadLCD(void *arg) {
 			lcd5110SetPosXY(&SPID2, 30, 1);
 			lcd5110WriteText(&SPID2, out);
 		}
+		else {
+			lcd5110WriteByte(&SPID2, 0xff, LCD5110_SEND_DATA);
+		}
 	}
 
 	return 0;
@@ -421,9 +424,9 @@ int main(void) {
 	initMag();
 	bmp085_status = bmp085_init();
 	lcd5110Init(&SPID2);
-	lcd5110SetPosXY(&SPID2, 1, 0);
+	lcd5110SetPosXY(&SPID2, 0, 0);
 	lcd5110WriteText(&SPID2, "P :: ");
-	lcd5110SetPosXY(&SPID2, 1, 1);
+	lcd5110SetPosXY(&SPID2, 0, 1);
 	lcd5110WriteText(&SPID2, "T :: ");
 //	lcd5110SetPosXY(&SPID2, 30, 0);
 //	lcd5110WriteText(&SPID2, "000");

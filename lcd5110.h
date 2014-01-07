@@ -85,7 +85,7 @@ extern "C" {
   void lcd5110Clear(SPIDriver *spip);
   void lcd5110SetPosXY(SPIDriver *spip, uint8_t x, uint8_t y);
   void lcd5110WriteChar (SPIDriver *spip, uint8_t ch);
-  void lcd5110WriteText(SPIDriver *spip, const uint8_t * strp);
+  void lcd5110WriteText(SPIDriver *spip, const char * strp);
   void lcd5110RotateText(SPIDriver *spip, const uint8_t * strp, uint8_t offset);
 #ifdef __cplusplus
 }
