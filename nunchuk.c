@@ -20,7 +20,7 @@ uint8_t nunchuk_init(void) {
 	status = i2cMasterTransmitTimeout(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, rxbuff, 1, tmo);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
-		return 1;
+		return status;
 	}
 
 	status = i2cMasterTransmitTimeout(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf1, 2, rxbuff, 1, tmo);

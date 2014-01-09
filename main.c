@@ -291,13 +291,19 @@ static WORKING_AREA(waPoller, 128);
 static msg_t ThreadPoller(void *arg) {
 	(void) arg;
 
+	char out[9];
 	chRegSetThreadName("poller");
-
 	while (TRUE) {
 		if (bmp085_status == 0) {
 			PollerData.temp = bmp085_read_temp();
 			PollerData.press = bmp085_read_press();
 			PollerData.uTime = rtcGetTimeUnixSec(&RTCD1);
+			chsnprintf(out, sizeof(out), "%4.2f", PollerData.press/133.322);
+			lcd5110SetPosXY(&SPID2, 30, 0);
+			lcd5110WriteText(&SPID2, out);
+			chsnprintf(out, sizeof(out), "%4.2f", PollerData.temp/10.0);
+			lcd5110SetPosXY(&SPID2, 30, 1);
+			lcd5110WriteText(&SPID2, out);
 			chThdSleepMilliseconds(POLLER_TIMEOUT);
 		}
 	}
@@ -325,28 +331,6 @@ static msg_t ThreadButton(void *arg) {
 	return 0; // nevar forget
 }
 
-static WORKING_AREA(waThreadLCD, 128);
-static msg_t ThreadLCD(void *arg) {
-	(void) arg;
-
-	chRegSetThreadName("LCD");
-	char out[9];
-	while (TRUE) {
-		if (bmp085_status == 0) {
-			chsnprintf(out, sizeof(out), "%4.2f", PollerData.press/133.322);
-			lcd5110SetPosXY(&SPID2, 30, 0);
-			lcd5110WriteText(&SPID2, out);
-			chsnprintf(out, sizeof(out), "%4.2f", PollerData.temp/10.0);
-			lcd5110SetPosXY(&SPID2, 30, 1);
-			lcd5110WriteText(&SPID2, out);
-		}
-		else {
-			lcd5110WriteByte(&SPID2, 0xff, LCD5110_SEND_DATA);
-		}
-	}
-
-	return 0;
-}
 
 static WORKING_AREA(waThreadBlink, 128);
 static msg_t ThreadBlink(void *arg) {
@@ -424,12 +408,12 @@ int main(void) {
 	spiStart(&SPID1, &spi1cfg);
 	spiStart(&SPID2, &spi2cfg);
 	i2cStart(&I2CD1, &i2cconfig);
+	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4));
+	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4));
 	initGyro();
 	initAccel();
 	initMag();
 	bmp085_status = bmp085_init();
-	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(4));
-	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(4));
 	nunchuk_status = nunchuk_init();
 	lcd5110Init(&SPID2);
 	lcd5110SetPosXY(&SPID2, 0, 0);
@@ -443,7 +427,6 @@ int main(void) {
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);
 	chThdCreateStatic(waThreadButton, sizeof(waThreadButton), NORMALPRIO, ThreadButton, NULL);
 	chThdCreateStatic(waPoller, sizeof(waPoller), NORMALPRIO, ThreadPoller, NULL);
-	chThdCreateStatic(waThreadLCD, sizeof(waThreadLCD), NORMALPRIO, ThreadLCD, NULL);
 
     while (TRUE) {
 		if (!sh) {
