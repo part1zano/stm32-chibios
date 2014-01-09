@@ -13,17 +13,16 @@ msg_t nunchuk_init(void) {
 	static uint8_t rxbuff[1];
 
 	msg_t status = RDY_OK;
-	systime_t tmo = MS2ST(4);
 
 	i2cAcquireBus(&NUNCHUK_I2CD);
 
-	status = i2cMasterTransmitTimeout(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, rxbuff, 1, tmo);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, rxbuff, 1);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
 		return status;
 	}
 
-	status = i2cMasterTransmitTimeout(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf1, 2, rxbuff, 1, tmo);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf1, 2, rxbuff, 1);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
 		return 2;
@@ -40,10 +39,9 @@ uint8_t * nunchuk_data(void) {
 
 
 	msg_t status = RDY_OK;
-	systime_t tmo = MS2ST(4);
 
 	i2cAcquireBus(&NUNCHUK_I2CD);
-	status = i2cMasterTransmitTimeout(&NUNCHUK_I2CD, NUNCHUK_ADDR, txbuf, 1, rxbuf, 6, tmo);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, txbuf, 1, rxbuf, 6);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
 		return NULL;
