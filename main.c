@@ -36,6 +36,7 @@
 // atoi
 #include <stdlib.h> 
 #include "lcd5110.h"
+#include "nunchuk.h"
 
 /*
 #define usb_lld_connect_bus(usbp)

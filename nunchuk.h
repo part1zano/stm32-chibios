@@ -10,5 +10,5 @@
 #define NUNCHUK_ABTN 0x05
 
 uint8_t nunchuk_init(void);
-uint8_t[6] nunchuk_data(void);
+uint8_t * nunchuk_data(void);
 #endif // _NUNCHUK_H_

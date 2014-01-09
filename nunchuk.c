@@ -10,12 +10,12 @@
 uint8_t nunchuk_init(void) {
 	const uint8_t buf0[] = {0xf0, 0x65};
 	const uint8_t buf1[] = {0xfb, 0x00};
-	uint8_t rxbuff[1];
+	static uint8_t rxbuff[1];
 
 	msg_t status = RDY_OK;
 	systime_t tmo = MS2ST(4);
 
-	i2cAcquireBus(&NUHCHUK_I2CD);
+	i2cAcquireBus(&NUNCHUK_I2CD);
 
 	status = i2cMasterTransmitTimeout(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, rxbuff, 1, tmo);
 	if (status != RDY_OK) {
@@ -34,9 +34,10 @@ uint8_t nunchuk_init(void) {
 	return 0;
 }
 
-uint8_t[6] nunchuk_data(void) {
-	uint8_t txbuf[] = {0x00};
-	uint8_t rxbuf[6];
+uint8_t * nunchuk_data(void) {
+	const uint8_t txbuf[] = {0x00};
+	static uint8_t rxbuf[6];
+
 
 	msg_t status = RDY_OK;
 	systime_t tmo = MS2ST(4);
