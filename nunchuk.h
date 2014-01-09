@@ -9,6 +9,6 @@
 #define NUNCHUK_AZ 0x04
 #define NUNCHUK_ABTN 0x05
 
-uint8_t nunchuk_init(void);
+msg_t nunchuk_init(void);
 uint8_t * nunchuk_data(void);
 #endif // _NUNCHUK_H_

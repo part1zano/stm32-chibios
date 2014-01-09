@@ -248,7 +248,7 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
-uint8_t nunchuk_status = 0;
+msg_t nunchuk_status = 0;
 static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;

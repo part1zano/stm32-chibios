@@ -7,7 +7,7 @@
 #define NUNCHUK_I2CD I2CD1
 #endif
 
-uint8_t nunchuk_init(void) {
+msg_t nunchuk_init(void) {
 	const uint8_t buf0[] = {0xf0, 0x65};
 	const uint8_t buf1[] = {0xfb, 0x00};
 	static uint8_t rxbuff[1];
