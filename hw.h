@@ -1,3 +1,5 @@
+#ifndef _HW_H_
+#define _HW_H_
 #define BMP085_I2CD I2CD1
 
 #define AGM_I2CD I2CD1
@@ -9,3 +11,4 @@
 #define LCD5110_DC_PORT GPIOB
 
 #define NUNCHUK_I2CD I2CD1
+#endif // _HW_H_
