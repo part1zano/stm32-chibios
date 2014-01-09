@@ -18,8 +18,9 @@ msg_t nunchuk_init(void) {
 
 	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, rxbuff, 1);
 	if (status != RDY_OK) {
+		i2cflags_t errors = i2cGetErrors(&NUNCHUK_I2CD);
 		i2cReleaseBus(&NUNCHUK_I2CD);
-		return status;
+		return errors; // XXX :: signed/unsigned!
 	}
 
 	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf1, 2, rxbuff, 1);
