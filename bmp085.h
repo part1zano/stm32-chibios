@@ -3,7 +3,8 @@
 // Author: Roberto Marino <formica@member.fsf.org>
 // Date: Jul 25 2011
 //------------------------------------------------
-
+#ifndef _BMP085_H_
+#define _BMP085_H_
 #include <stdint.h>
 
 #define BMP_ADDR 	0x77	//I2c address of BMP085 without R/W bit
@@ -79,3 +80,4 @@ int32_t bmp085_read_press(void);
 
 
 
+#endif // _BMP085_H_
