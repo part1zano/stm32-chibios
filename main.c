@@ -248,19 +248,23 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
-static void cmd_say(BaseSequentialStream *chp, int argc, char *argv[]) {
+uint8_t nunchuk_status = 0;
+static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
-	char ch = '#';
-	
-	chprintf(chp, "Saying something on lcd\r\n");
-	if (SPID2.state != SPI_READY) {
-		return;
+	uint8_t *data;
+	uint8_t i;
+	uint8_t times = 100;
+
+	if (nunchuk_status == 0) {
+		chprintf(chp, "#\t JX\t JY\r\n");
+		for (i = 0; i < times; i++) {
+			data = nunchuk_data();
+			chprintf(chp, "%d\t %d\t %d\t\r\n", i, data[0], data[1]);
+		}
 	}
-	lcd5110WriteChar(&SPID2, (uint8_t)ch);
-	chprintf(chp, "wrote %c to lcd\r\n", ch);
-	if (SPID2.state != SPI_READY) {
-		chprintf(chp, "with errors\r\n");
+	else {
+		chprintf(chp, "ERROR! nunchuk returned non-zero: %d\r\n", nunchuk_status);
 	}
 }
 
@@ -274,7 +278,7 @@ static const ShellCommand shCmds[] = {
 	{"free", cmd_mem},
 	{"reboot", cmd_reboot},
 	{"bmp", cmd_pressure},
-	{"say", cmd_say},
+	{"chuk", cmd_chuk},
 	{NULL, NULL}
 };
 
@@ -424,6 +428,9 @@ int main(void) {
 	initAccel();
 	initMag();
 	bmp085_status = bmp085_init();
+	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(4));
+	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(4));
+	nunchuk_status = nunchuk_init();
 	lcd5110Init(&SPID2);
 	lcd5110SetPosXY(&SPID2, 0, 0);
 	lcd5110WriteText(&SPID2, "P :: ");
