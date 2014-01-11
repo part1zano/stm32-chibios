@@ -252,15 +252,18 @@ msg_t nunchuk_status = 0;
 static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
-	uint8_t *data;
+	uint8_t data[6];
 	uint8_t i;
 	uint8_t times = 100;
+	msg_t status = RDY_OK;
 
 	if (nunchuk_status == 0) {
-		chprintf(chp, "#\t JX\t JY\r\n");
+		chprintf(chp, "#\t JX\t JY\t 3rd\r\n");
 		for (i = 0; i < times; i++) {
-			data = nunchuk_data();
-			chprintf(chp, "%d\t %d\t %d\t\r\n", i, data[0], data[1]);
+			status = nunchuk_data(data);
+			if (status == RDY_OK) {
+				chprintf(chp, "%d\t %d\t %d\t %d\r\n", i, data[2], data[1], data[5]);
+			}
 		}
 	}
 	else {

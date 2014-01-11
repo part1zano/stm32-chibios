@@ -8,22 +8,24 @@
 #endif
 
 i2cflags_t nunchuk_init(void) {
+
 	const uint8_t buf0[] = {0xf0, 0x65};
 	const uint8_t buf1[] = {0xfb, 0x00};
-	static uint8_t rxbuff[1];
-
+/*
+	const uint8_t buf1[] = {0x40, 0x00};
+*/
 	msg_t status = RDY_OK;
 
 	i2cAcquireBus(&NUNCHUK_I2CD);
 
-	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, rxbuff, 1);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf0, 2, NULL, 0);
 	if (status != RDY_OK) {
 		i2cflags_t errors = i2cGetErrors(&NUNCHUK_I2CD);
 		i2cReleaseBus(&NUNCHUK_I2CD);
 		return errors; 
 	}
 
-	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf1, 2, rxbuff, 1);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, buf1, 2, NULL, 0);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
 		return 2;
@@ -34,19 +36,31 @@ i2cflags_t nunchuk_init(void) {
 	return 0;
 }
 
-uint8_t * nunchuk_data(void) {
+msg_t nunchuk_data(uint8_t *data) {
 	const uint8_t txbuf[] = {0x00};
-	static uint8_t rxbuf[6];
+	uint8_t rxbuf[6];
+	uint8_t first_addr = 0x00;
 
 
 	msg_t status = RDY_OK;
 
 	i2cAcquireBus(&NUNCHUK_I2CD);
-	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, txbuf, 1, rxbuf, 6);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, txbuf, 1, NULL, 0);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
-		return NULL;
+		return status;
+	}
+
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, &first_addr, 1, rxbuf, 6);
+	if (status != RDY_OK) {
+		i2cReleaseBus(&NUNCHUK_I2CD);
+		return status;
 	}
 	i2cReleaseBus(&NUNCHUK_I2CD);
-	return rxbuf;
+
+	uint8_t i;
+	for (i = 0; i < 6; i++) {
+		data[i] = rxbuf[i];
+	}
+	return 0;
 }

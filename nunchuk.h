@@ -11,5 +11,5 @@
 #define NUNCHUK_ABTN 0x05
 
 i2cflags_t nunchuk_init(void);
-uint8_t * nunchuk_data(void);
+msg_t nunchuk_data(uint8_t *data);
 #endif // _NUNCHUK_H_
