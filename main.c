@@ -262,7 +262,7 @@ static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 		for (i = 0; i < times; i++) {
 			status = nunchuk_data(data);
 			if (status == RDY_OK) {
-				chprintf(chp, "%d\t %d\t %d\t %d\r\n", i, data[2], data[1], data[5]);
+				chprintf(chp, "%d\t %d\t %d\t %d\r\n", i, data[0], data[1], data[5]);
 			}
 		}
 	}
