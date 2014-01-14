@@ -303,11 +303,11 @@ static msg_t ThreadPoller(void *arg) {
 			PollerData.press = bmp085_read_press();
 			PollerData.uTime = rtcGetTimeUnixSec(&RTCD1);
 			chsnprintf(out, sizeof(out), "%4.2f", PollerData.press/133.322);
-			lcd5110SetPosXY(&SPID2, 30, 0);
-			lcd5110WriteText(&SPID2, out);
+			lcd5110SetPosXY(30, 0);
+			lcd5110WriteText(out);
 			chsnprintf(out, sizeof(out), "%4.2f", PollerData.temp/10.0);
-			lcd5110SetPosXY(&SPID2, 30, 1);
-			lcd5110WriteText(&SPID2, out);
+			lcd5110SetPosXY(30, 1);
+			lcd5110WriteText(out);
 			chThdSleepMilliseconds(POLLER_TIMEOUT);
 		}
 	}
@@ -417,13 +417,11 @@ int main(void) {
 	initAccel();
 	initMag();
 	bmp085_status = bmp085_init();
-	lcd5110Init(&SPID2);
-	lcd5110SetPosXY(&SPID2, 0, 0);
-	lcd5110WriteText(&SPID2, "P :: ");
-	lcd5110SetPosXY(&SPID2, 0, 1);
-	lcd5110WriteText(&SPID2, "T :: ");
-//	lcd5110SetPosXY(&SPID2, 30, 0);
-//	lcd5110WriteText(&SPID2, "000");
+	lcd5110Init();
+	lcd5110SetPosXY(0, 0);
+	lcd5110WriteText("P :: ");
+	lcd5110SetPosXY(0, 1);
+	lcd5110WriteText("T :: ");
 
 
 	chThdCreateStatic(waThreadBlink, sizeof(waThreadBlink), NORMALPRIO, ThreadBlink, NULL);

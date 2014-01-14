@@ -64,6 +64,10 @@
 #error "LCD5110_DC_PORT not defined!!!"
 #endif
 
+#if!defined(LCD5110_SPID)
+#error "LCD5110_SPID undefined!"
+#endif
+
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
@@ -79,14 +83,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void lcd5110Init(SPIDriver *spip);
-  void lcd5110WriteByte(SPIDriver *spip, uint8_t data, uint8_t cd);
-  void lcd5110Contrast(SPIDriver *spip, uint8_t contrast);
-  void lcd5110Clear(SPIDriver *spip);
-  void lcd5110SetPosXY(SPIDriver *spip, uint8_t x, uint8_t y);
-  void lcd5110WriteChar (SPIDriver *spip, uint8_t ch);
-  void lcd5110WriteText(SPIDriver *spip, const char * strp);
-  void lcd5110RotateText(SPIDriver *spip, const uint8_t * strp, uint8_t offset);
+  void lcd5110InitI(SPIDriver *spip);
+  void lcd5110WriteByteI(SPIDriver *spip, uint8_t data, uint8_t cd);
+  void lcd5110ContrastI(SPIDriver *spip, uint8_t contrast);
+  void lcd5110ClearI(SPIDriver *spip);
+  void lcd5110SetPosXYI(SPIDriver *spip, uint8_t x, uint8_t y);
+  void lcd5110WriteCharI(SPIDriver *spip, uint8_t ch);
+  void lcd5110WriteTextI(SPIDriver *spip, const char * strp);
+  void lcd5110RotateTextI(SPIDriver *spip, const uint8_t * strp, uint8_t offset);
+
+#define lcd5110Init() lcd5110InitI(&LCD5110_SPID)
+#define lcd5110WriteByte(...) lcd5110WriteByteI(&LCD5110_SPID, __VA_ARGS__)
+#define lcd5110Contrast(...) lcd5110ContrastI(&LCD5110_SPID, __VA_ARGS__)
+#define lcd5110Clear() lcd5110ClearI(&LCD5110_SPID)
+#define lcd5110SetPosXY(...) lcd5110SetPosXYI(&LCD5110_SPID, __VA_ARGS__)
+#define lcd51120WriteChar(...) lcd5110WriteCharI(&LCD5110_SPID, __VA_ARGS__)
+#define lcd5110WriteText(...) lcd5110WriteTextI(&LCD5110_SPID, __VA_ARGS__)
+#define lcd5110RotateText(...) lcd5110RotateTextI(&LCD5110_SPID, __VA_ARGS__)
 #ifdef __cplusplus
 }
 #endif

@@ -152,7 +152,7 @@ const uint8_t  Fonts8x5 [][LCD5110_FONT_X_SIZE] =
  * @param[in] spip      pointer to the SPI interface
  *
  */
-void lcd5110Init(SPIDriver *spip) {
+void lcd5110InitI(SPIDriver *spip) {
 
   /* Reset LCD */
   palClearPad(LCD5110_RES_PORT, LCD5110_RES_PIN);
@@ -161,18 +161,18 @@ void lcd5110Init(SPIDriver *spip) {
   chThdSleepMilliseconds(15);
 
   /* Send configuration commands to LCD */
-  lcd5110WriteByte(spip, 0x21, LCD5110_SEND_CMD);  /* LCD extended commands */
+  lcd5110WriteByteI(spip, 0x21, LCD5110_SEND_CMD);  /* LCD extended commands */
 
   
-  lcd5110WriteByte(spip, 0x06, LCD5110_SEND_CMD);  
-  lcd5110WriteByte(spip, 0x14, LCD5110_SEND_CMD);  
-  lcd5110WriteByte(spip, 0xbf, LCD5110_SEND_CMD);  
+  lcd5110WriteByteI(spip, 0x06, LCD5110_SEND_CMD);  
+  lcd5110WriteByteI(spip, 0x14, LCD5110_SEND_CMD);  
+  lcd5110WriteByteI(spip, 0xbf, LCD5110_SEND_CMD);  
 
-  lcd5110WriteByte(spip, 0x0c, LCD5110_SEND_CMD);
-  lcd5110WriteByte(spip, 0x20, LCD5110_SEND_CMD);
-  lcd5110WriteByte(spip, 0x0c, LCD5110_SEND_CMD);
+  lcd5110WriteByteI(spip, 0x0c, LCD5110_SEND_CMD);
+  lcd5110WriteByteI(spip, 0x20, LCD5110_SEND_CMD);
+  lcd5110WriteByteI(spip, 0x0c, LCD5110_SEND_CMD);
 
-  lcd5110Clear(spip); /* Clear LCD */
+  lcd5110ClearI(spip); /* Clear LCD */
 }
 
 /**
@@ -183,7 +183,7 @@ void lcd5110Init(SPIDriver *spip) {
  * @param[in] data    data to write
  * @param[in] cd      select between command or data
  */
-void lcd5110WriteByte(SPIDriver *spip, uint8_t data, uint8_t cd) {
+void lcd5110WriteByteI(SPIDriver *spip, uint8_t data, uint8_t cd) {
 
   spiSelect(spip);
 
@@ -204,14 +204,14 @@ void lcd5110WriteByte(SPIDriver *spip, uint8_t data, uint8_t cd) {
  *
  * @param[in] spip    pointer to the SPI interface
  */
-void lcd5110Clear(SPIDriver *spip) { // ok
+void lcd5110ClearI(SPIDriver *spip) { // ok
 
   uint32_t i, j;
 
   for (i = 0; i < LCD5110_Y_RES/LCD5110_FONT_Y_SIZE; i++) {
-    lcd5110SetPosXY(spip, 0, i);
+    lcd5110SetPosXYI(spip, 0, i);
     for (j = 0; j < LCD5110_X_RES; j++)
-      lcd5110WriteByte(spip, 0x00, LCD5110_SEND_DATA);
+      lcd5110WriteByteI(spip, 0x00, LCD5110_SEND_DATA);
   }
 
 }
@@ -224,13 +224,13 @@ void lcd5110Clear(SPIDriver *spip) { // ok
  * @param[in] x    column address in LCD DDRAM, 0 to 83
  * @param[in] y    page address in LCD DDRAM, 0 to 5
  */
-void lcd5110SetPosXY(SPIDriver *spip, uint8_t x, uint8_t y) {
+void lcd5110SetPosXYI(SPIDriver *spip, uint8_t x, uint8_t y) {
 
     if (y > LCD5110_Y_RES/LCD5110_FONT_Y_SIZE) return;
     if (x > LCD5110_X_RES) return;
 
-    lcd5110WriteByte(spip, 0x80 | x, LCD5110_SEND_CMD);   /* Set x position */
-    lcd5110WriteByte(spip, 0x40 | y, LCD5110_SEND_CMD);   /* Set y position */
+    lcd5110WriteByteI(spip, 0x80 | x, LCD5110_SEND_CMD);   /* Set x position */
+    lcd5110WriteByteI(spip, 0x40 | y, LCD5110_SEND_CMD);   /* Set y position */
 
 }
 
@@ -241,12 +241,12 @@ void lcd5110SetPosXY(SPIDriver *spip, uint8_t x, uint8_t y) {
  * @param[in] spip    pointer to the SPI interface
  * @param[in] ch      char
  */
-void lcd5110WriteChar(SPIDriver *spip, uint8_t ch) {
+void lcd5110WriteCharI(SPIDriver *spip, uint8_t ch) {
 
   uint8_t i;
 
   for ( i = 0; i < LCD5110_FONT_X_SIZE; i++ ){
-    lcd5110WriteByte(spip, Fonts8x5[ch - 32][i], LCD5110_SEND_DATA);
+    lcd5110WriteByteI(spip, Fonts8x5[ch - 32][i], LCD5110_SEND_DATA);
   }
 
 }
@@ -258,11 +258,11 @@ void lcd5110WriteChar(SPIDriver *spip, uint8_t ch) {
  * @param[in] spip      pointer to the SPI interface
  * @param[in] contrast  LCD contrast value
  */
-void lcd5110Contrast (SPIDriver *spip, uint8_t contrast) {
+void lcd5110ContrastI (SPIDriver *spip, uint8_t contrast) {
 
-  lcd5110WriteByte(spip, 0x21, LCD5110_SEND_CMD);              /* LCD Extended Commands */
-  lcd5110WriteByte(spip, 0x80 | contrast, LCD5110_SEND_CMD);   /* Set LCD Vop (Contrast) */
-  lcd5110WriteByte(spip, 0x20, LCD5110_SEND_CMD);              /* LCD Standard Commands, horizontal addressing mode */
+  lcd5110WriteByteI(spip, 0x21, LCD5110_SEND_CMD);              /* LCD Extended Commands */
+  lcd5110WriteByteI(spip, 0x80 | contrast, LCD5110_SEND_CMD);   /* Set LCD Vop (Contrast) */
+  lcd5110WriteByteI(spip, 0x20, LCD5110_SEND_CMD);              /* LCD Standard Commands, horizontal addressing mode */
 }
 
 
@@ -273,10 +273,10 @@ void lcd5110Contrast (SPIDriver *spip, uint8_t contrast) {
  * @param[in] spip      pointer to the SPI interface
  * @param[in] strp      pointer to text
  */
-void lcd5110WriteText(SPIDriver *spip, const char * strp) {
+void lcd5110WriteTextI(SPIDriver *spip, const char * strp) {
 
   while ( *strp ) {
-    lcd5110WriteChar(spip, (uint8_t )*strp);
+    lcd5110WriteCharI(spip, (uint8_t )*strp);
     strp++;
   }
 }
@@ -289,7 +289,7 @@ void lcd5110WriteText(SPIDriver *spip, const char * strp) {
  * @param[in] strp      pointer to text
  * @param[in] offset    text offset
  */
-void lcd5110RotateText(SPIDriver *spip, const uint8_t * strp, uint8_t offset) {
+void lcd5110RotateTextI(SPIDriver *spip, const uint8_t * strp, uint8_t offset) {
 
   uint8_t i;
   uint8_t n;
@@ -303,9 +303,9 @@ void lcd5110RotateText(SPIDriver *spip, const uint8_t * strp, uint8_t offset) {
   for (i = 0; i < LCD5110_X_RES/LCD5110_FONT_X_SIZE; i++) {
       m = i + offset;
       if ( m < n)
-        lcd5110WriteChar(spip, strp[m]);
+        lcd5110WriteCharI(spip, strp[m]);
       else
-        lcd5110WriteChar(spip, strp[m - n]);
+        lcd5110WriteCharI(spip, strp[m - n]);
   }
 }
 
