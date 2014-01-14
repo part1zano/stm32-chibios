@@ -36,7 +36,6 @@
 // atoi
 #include <stdlib.h> 
 #include "lcd5110.h"
-#include "nunchuk.h"
 
 /*
 #define usb_lld_connect_bus(usbp)
@@ -248,6 +247,7 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
+/*
 msg_t nunchuk_status = 0;
 static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
@@ -270,6 +270,7 @@ static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 		chprintf(chp, "ERROR! nunchuk returned non-zero: %d\r\n", nunchuk_status);
 	}
 }
+*/
 
 static const ShellCommand shCmds[] = {
 	{"test",      cmd_test},
@@ -281,7 +282,7 @@ static const ShellCommand shCmds[] = {
 	{"free", cmd_mem},
 	{"reboot", cmd_reboot},
 	{"bmp", cmd_pressure},
-	{"chuk", cmd_chuk},
+//	{"chuk", cmd_chuk},
 	{NULL, NULL}
 };
 
@@ -410,17 +411,12 @@ int main(void) {
 
 	spiStart(&SPID1, &spi1cfg);
 	spiStart(&SPID2, &spi2cfg);
-	// i2c-related pins (for nunchuk)
-	/*
-	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4));
-	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4));
-	*/
+	
 	i2cStart(&I2CD1, &i2cconfig);
 	initGyro();
 	initAccel();
 	initMag();
 	bmp085_status = bmp085_init();
-	nunchuk_status = nunchuk_init();
 	lcd5110Init(&SPID2);
 	lcd5110SetPosXY(&SPID2, 0, 0);
 	lcd5110WriteText(&SPID2, "P :: ");
