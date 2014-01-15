@@ -36,6 +36,7 @@
 // atoi
 #include <stdlib.h> 
 #include "lcd5110.h"
+//#include "nunchuk.h"
 
 /*
 #define usb_lld_connect_bus(usbp)
@@ -246,9 +247,8 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 		chprintf(chp, "ERROR! bmp085 initialization returned %d\r\n", bmp085_status);
 	}
 }
-
 /*
-msg_t nunchuk_status = 0;
+msg_t nunchuk_status = 255;
 static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
 	(void) argv;
@@ -271,7 +271,6 @@ static void cmd_chuk(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 */
-
 static const ShellCommand shCmds[] = {
 	{"test",      cmd_test},
 	{"gyrodata",	cmd_gyrodata},
@@ -402,7 +401,8 @@ int main(void) {
 	
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusbcfg);
-// SPI-related pins (for display)
+
+	// SPI-related pins (for display)
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL); 
 	palSetPadMode(GPIOB, 10, PAL_MODE_OUTPUT_PUSHPULL);
 	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5));
@@ -411,11 +411,12 @@ int main(void) {
 
 	spiStart(&SPID1, &spi1cfg);
 	spiStart(&SPID2, &spi2cfg);
-	
+
 	i2cStart(&I2CD1, &i2cconfig);
 	initGyro();
 	initAccel();
 	initMag();
+//	nunchuk_status = nunchuk_init();
 	bmp085_status = bmp085_init();
 	lcd5110Init();
 	lcd5110SetPosXY(0, 0);
