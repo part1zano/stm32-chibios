@@ -89,7 +89,6 @@ CSRC = $(PORTSRC) \
 	   lcd5110.c \
 	   bmp085.c \
 	   accelgyromag.c \
-	   nunchuk.c \
 	   $(CHIBIOS)/os/various/memstreams.c \
        usbcfg.c \
        main.c
