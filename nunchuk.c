@@ -51,7 +51,7 @@ msg_t nunchuk_data(uint8_t *data) {
 		return status;
 	}
 	chThdSleepMilliseconds(200);
-	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, &first_addr, 1, rxbuf, 6);
+	status = i2cMasterTransmit(&NUNCHUK_I2CD, NUNCHUK_ADDR, NULL, 0, rxbuf, 6);
 	if (status != RDY_OK) {
 		i2cReleaseBus(&NUNCHUK_I2CD);
 		return status;

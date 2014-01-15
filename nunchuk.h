@@ -2,6 +2,9 @@
 #define _NUNCHUK_H_
 //#define NUNCHUK_ADDR 0xa4
 #define NUNCHUK_ADDR 0x52
+#define NUNCHUK_READ_ADDR 0xa5
+#define NUNCHUK_WRITE_ADDR 0xa4
+
 
 #define NUNCHUK_JX 0x00
 #define NUNCHUK_JY 0x01
