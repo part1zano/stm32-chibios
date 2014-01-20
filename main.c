@@ -198,14 +198,17 @@ static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 }
 
 static void cmd_mem(BaseSequentialStream *chp, int argc, char *argv[]) {
-//	size_t n, size;
+	/*
+	size_t n, size;
+	struct MemoryHeap *m;
+	*/
 	(void) argv;
 	(void) argc;
-
-//	n = chHeapStatus(&size);
-	chprintf(chp, "core free memory : %u bytes\r\n", chCoreStatus());
-//	chprintf(chp, "heap fragments   : %u\r\n", n);
-//	chprintf(chp, "heap free total  : %u bytes\r\n", size);
+/*
+	n = chHeapStatus(m, &size);*/
+	chprintf(chp, "core free memory : %u bytes\r\n", chCoreStatus());/*
+	chprintf(chp, "heap fragments   : %u\r\n", n);
+	chprintf(chp, "heap free total  : %u bytes\r\n", size);*/
 }
 
 static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
