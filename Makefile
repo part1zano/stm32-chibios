@@ -61,7 +61,7 @@ endif
 #
 
 # Define project name here
-PROJECT = stm-gyrodata
+PROJECT = ch
 
 # Imported source files and paths
 CHIBIOS = ./ChibiOS-RT
