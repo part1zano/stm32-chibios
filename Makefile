@@ -10,7 +10,7 @@ endif
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
-  USE_COPT =
+  USE_COPT = 
 endif
 
 # C++ specific options here (added to USE_OPT).
@@ -21,6 +21,16 @@ endif
 # Enable this if you want the linker to remove unused code and data
 ifeq ($(USE_LINK_GC),)
   USE_LINK_GC = yes
+endif
+
+# Linker extra options here.
+ifeq ($(USE_LDOPT),)
+  USE_LDOPT = 
+endif
+
+# Enable this if you want link time optimizations (LTO)
+ifeq ($(USE_LTO),)
+  USE_LTO = no
 endif
 
 # If enabled, this option allows to compile the application in THUMB mode.
@@ -41,15 +51,21 @@ endif
 # Architecture or project specific options
 #
 
-# Enables the use of FPU on Cortex-M4.
-# Enable this if you really want to use the STM FWLib.
-ifeq ($(USE_FPU),)
-  USE_FPU = yes
+# Stack size to be allocated to the Cortex-M process stack. This stack is
+# the stack used by the main() thread.
+ifeq ($(USE_PROCESS_STACKSIZE),)
+  USE_PROCESS_STACKSIZE = 0x400
 endif
 
-# Enable this if you really want to use the STM FWLib.
-ifeq ($(USE_FWLIB),)
-  USE_FWLIB = no
+# Stack size to the allocated to the Cortex-M main/exceptions stack. This
+# stack is used for processing interrupts and exceptions.
+ifeq ($(USE_EXCEPTIONS_STACKSIZE),)
+  USE_EXCEPTIONS_STACKSIZE = 0x400
+endif
+
+# Enables the use of FPU on Cortex-M4 (no, softfp, hard).
+ifeq ($(USE_FPU),)
+  USE_FPU = no
 endif
 
 #
@@ -64,13 +80,14 @@ endif
 PROJECT = ch
 
 # Imported source files and paths
-CHIBIOS = ./ChibiOS-RT
-include $(CHIBIOS)/boards/ST_STM32F3_DISCOVERY/board.mk
-include $(CHIBIOS)/os/hal/platforms/STM32F30x/platform.mk
+CHIBIOS = ../../..
 include $(CHIBIOS)/os/hal/hal.mk
-include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F3xx/port.mk
-include $(CHIBIOS)/os/kernel/kernel.mk
-include $(CHIBIOS)/test/test.mk
+include $(CHIBIOS)/os/hal/boards/ST_STM32F3_DISCOVERY/board.mk
+include $(CHIBIOS)/os/hal/ports/STM32/STM32F30x/platform.mk
+include $(CHIBIOS)/os/hal/osal/rt/osal.mk
+include $(CHIBIOS)/os/rt/rt.mk
+include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f30x.mk
+include $(CHIBIOS)/test/rt/test.mk
 
 # Define linker script file here
 LDSCRIPT= $(PORTLD)/STM32F303xC.ld
@@ -81,9 +98,9 @@ CSRC = $(PORTSRC) \
        $(KERNSRC) \
        $(TESTSRC) \
        $(HALSRC) \
+       $(OSALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       $(CHIBIOS)/os/various/chprintf.c \
 	   $(CHIBIOS)/os/various/shell.c \
 	   $(CHIBIOS)/os/various/chrtclib.c \
 	   lcd5110.c \
@@ -121,9 +138,8 @@ TCPPSRC =
 ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
-         $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various/devices_lib/accel \
-         $(CHIBIOS)/os/various 
+         $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
+         $(CHIBIOS)/os/various
 
 #
 # Project, sources and paths
@@ -147,6 +163,7 @@ LD   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 OD   = $(TRGT)objdump
+SZ   = $(TRGT)size
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 
@@ -167,29 +184,6 @@ CPPWARN = -Wall -Wextra
 ##############################################################################
 
 ##############################################################################
-# Start of default section
-#
-
-# List all default C defines here, like -D_DEBUG=1
-DDEFS = -DCHPRINTF_USE_FLOAT=TRUE
-
-# List all default ASM defines here, like -D_DEBUG=1
-DADEFS =
-
-# List all default directories to look for include files here
-DINCDIR =
-
-# List the default directory to look for the libraries here
-DLIBDIR =
-
-# List all default libraries here
-DLIBS =
-
-#
-# End of default section
-##############################################################################
-
-##############################################################################
 # Start of user section
 #
 
@@ -206,24 +200,11 @@ UINCDIR =
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = -lm
+ULIBS =
 
 #
 # End of user defines
 ##############################################################################
 
-ifeq ($(USE_FPU),yes)
-  USE_OPT += -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  DDEFS += -DCORTEX_USE_FPU=TRUE
-else
-  DDEFS += -DCORTEX_USE_FPU=FALSE
-endif
-
-ifeq ($(USE_FWLIB),yes)
-  include $(CHIBIOS)/ext/stm32lib/stm32lib.mk
-  CSRC += $(STM32SRC)
-  INCDIR += $(STM32INC)
-  USE_OPT += -DUSE_STDPERIPH_DRIVER
-endif
-
-include $(CHIBIOS)/os/ports/GCC/ARMCMx/rules.mk
+RULESPATH = $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC
+include $(RULESPATH)/rules.mk
