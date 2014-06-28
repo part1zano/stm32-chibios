@@ -57,7 +57,7 @@ static bmp085_param param;
 
 int bmp085_init(void)
 {
-	msg_t status = RDY_OK;
+	msg_t status = RDY_OK; // all occurances of RDY_OK must be changed
 	uint8_t buffer_tx;
 	uint8_t buffer_rx[2];
 	systime_t tmo = MS2ST(4);
