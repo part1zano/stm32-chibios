@@ -80,7 +80,7 @@ endif
 PROJECT = ch
 
 # Imported source files and paths
-CHIBIOS = ../../..
+CHIBIOS = ChibiOS-RT
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/boards/ST_STM32F3_DISCOVERY/board.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F30x/platform.mk
@@ -139,7 +139,8 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various
+         $(CHIBIOS)/os/various \
+         $(CHIBIOS)/os/various/devices_lib/accel
 
 #
 # Project, sources and paths
