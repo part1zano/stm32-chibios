@@ -311,8 +311,8 @@ static THD_FUNCTION (ThreadPoller, arg) {
 			chsnprintf(out, sizeof(out), "%4.2f", PollerData.temp/10.0);
 			lcd5110SetPosXY(30, 1);
 			lcd5110WriteText(out);
-			chThdSleepMilliseconds(POLLER_TIMEOUT);
 		}
+		chThdSleepMilliseconds(POLLER_TIMEOUT);
 	}
 
 	return 0; // never returns
@@ -326,6 +326,7 @@ static THD_FUNCTION(ThreadButton, arg) {
 
 	while (TRUE) {
 		while (!palReadPad(GPIOA, GPIOA_BUTTON)) {
+			chThdSleepMilliseconds(1);
 		}
 		if (schema == MAXSCH) {
 			schema = 0;
