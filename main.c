@@ -28,7 +28,7 @@
 #include "shell.h"
 #include "chthreads.h"
 // testing rtc
-#include "chrtclib.h"
+//#include "chrtclib.h"
 // for barometer
 #include "bmp085.h"
 // for gyro, mag & accel
@@ -75,8 +75,8 @@ uint8_t schema = 0;
 
 typedef struct {
 	uint32_t temp;
-	uint32_t press;
-	time_t uTime;
+	uint32_t press;/*
+	time_t uTime;*/
 } poller_data;
 
 poller_data PollerData;
@@ -104,7 +104,7 @@ static const I2CConfig i2cconfig = {
 	0
 };
 
-#define SHELL_WA_SIZE   THD_WA_SIZE(1024)
+#define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(1024)
 
 static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
@@ -182,6 +182,7 @@ static void cmd_adjust(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 
+/*
 static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 	if (argc == 0) {
 		time_t unixTime = rtcGetTimeUnixSec(&RTCD1);
@@ -196,7 +197,7 @@ static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 		chprintf(chp, "which is %d-%02d-%02d %02d:%02d:%02d %s\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, TZ_STR);
 	}
 }
-
+*/
 static void cmd_mem(BaseSequentialStream *chp, int argc, char *argv[]) {
 	/*
 	size_t n, size;
@@ -240,10 +241,10 @@ static void cmd_pressure(BaseSequentialStream *chp, int argc, char *argv[]) {
 	
 	if (bmp085_status == 0) {
 		float temperature = PollerData.temp/10.0f;
-		float mm = PollerData.press/133.322f;
+		float mm = PollerData.press/133.322f;/*
 		time_t unixTime = PollerData.uTime;
 		struct tm *ts =  gmtime(& unixTime); // XXX :: possibly, an unneeded variable unixTime
-		chprintf(chp, "By %d-%02d-%02d %02d:%02d:%02d %s\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, TZ_STR);
+		chprintf(chp, "By %d-%02d-%02d %02d:%02d:%02d %s\r\n", (1900+ts->tm_year), (1+ts->tm_mon), ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, TZ_STR);*/
 		chprintf(chp, "Pressure is %ld Pa (%3.3f mm)\r\n", PollerData.press, mm);
 		chprintf(chp, "Temperature is: %3.3f C\r\n", temperature);
 	} else {
@@ -280,7 +281,7 @@ static const ShellCommand shCmds[] = {
 	{"magdata", cmd_magdata},
 	{"adjust", cmd_adjust},
 	{"schema", cmd_schema},
-	{"time", cmd_time},
+//	{"time", cmd_time},
 	{"free", cmd_mem},
 	{"reboot", cmd_reboot},
 	{"bmp", cmd_pressure},
@@ -293,8 +294,8 @@ static const ShellConfig shCfg = {
 	shCmds
 };
 
-static WORKING_AREA(waPoller, 128);
-static msg_t ThreadPoller(void *arg) {
+static THD_WORKING_AREA(waPoller, 128);
+static THD_FUNCTION (ThreadPoller, arg) {
 	(void) arg;
 
 	char out[9];
@@ -303,7 +304,7 @@ static msg_t ThreadPoller(void *arg) {
 		if (bmp085_status == 0) {
 			PollerData.temp = bmp085_read_temp();
 			PollerData.press = bmp085_read_press();
-			PollerData.uTime = rtcGetTimeUnixSec(&RTCD1);
+//			PollerData.uTime = rtcGetTimeUnixSec(&RTCD1);
 			chsnprintf(out, sizeof(out), "%4.2f", PollerData.press/133.322);
 			lcd5110SetPosXY(30, 0);
 			lcd5110WriteText(out);
@@ -317,8 +318,8 @@ static msg_t ThreadPoller(void *arg) {
 	return 0; // never returns
 }
 
-static WORKING_AREA(waThreadButton, 128);
-static msg_t ThreadButton(void *arg) {
+static THD_WORKING_AREA(waThreadButton, 128);
+static THD_FUNCTION(ThreadButton, arg) {
 	(void) arg;
 
 	chRegSetThreadName("button");
@@ -338,8 +339,8 @@ static msg_t ThreadButton(void *arg) {
 }
 
 
-static WORKING_AREA(waThreadBlink, 128);
-static msg_t ThreadBlink(void *arg) {
+static THD_WORKING_AREA(waThreadBlink, 128);
+static THD_FUNCTION (ThreadBlink, arg) {
 	(void) arg;
 
 	chRegSetThreadName("blinker");
@@ -386,11 +387,11 @@ static msg_t ThreadBlink(void *arg) {
 }
 
 int main(void) {
-	Thread *sh = NULL;
+	thread_t *sh = NULL;
 
 	PollerData.temp = 0;
-	PollerData.press = 0;
-	PollerData.uTime = 0;
+	PollerData.press = 0;/*
+	PollerData.uTime = 0;*/
 
 	halInit();
 	chSysInit();
@@ -436,7 +437,7 @@ int main(void) {
 		if (!sh) {
 			sh = shellCreate(&shCfg, SHELL_WA_SIZE, NORMALPRIO);
 		}
-		else if (chThdTerminated(sh)) {
+		else if (chThdTerminatedX(sh)) {
 			chThdRelease(sh);
 			sh = NULL;
 		}

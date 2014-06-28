@@ -95,7 +95,7 @@ uint8_t readAccel(float* data)
 	uint8_t out[7];
 	i2cAcquireBus(&AGM_I2CD);
 	msg_t f = i2cMasterTransmitTimeout(&AGM_I2CD, 0x19, &start_reg, 1, out, 7, TIME_INFINITE);
-	if (f != RDY_OK) {
+	if (f != MSG_OK) {
 		i2cReleaseBus(&AGM_I2CD);
 		return 0;
 	}
@@ -118,7 +118,7 @@ uint8_t readMag(float* data)
 	uint8_t out[7];
 	i2cAcquireBus(&AGM_I2CD);
 	msg_t f = i2cMasterTransmitTimeout(&AGM_I2CD, 0x1E, &start_reg, 1, out, 7, TIME_INFINITE);
-	if (f != RDY_OK) {
+	if (f != MSG_OK) {
 		i2cReleaseBus(&AGM_I2CD);
 		return 0;
 	}
