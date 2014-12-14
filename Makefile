@@ -80,7 +80,7 @@ endif
 PROJECT = ch
 
 # Imported source files and paths
-CHIBIOS = ChibiOS-RT
+CHIBIOS = ChibiOS
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/boards/ST_STM32F3_DISCOVERY/board.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F3xx/platform.mk

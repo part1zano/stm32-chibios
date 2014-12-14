@@ -198,19 +198,6 @@ static void cmd_time(BaseSequentialStream *chp, int argc, char *argv[]) {
 	}
 }
 */
-static void cmd_mem(BaseSequentialStream *chp, int argc, char *argv[]) {
-	/*
-	size_t n, size;
-	struct MemoryHeap *m;
-	*/
-	(void) argv;
-	(void) argc;
-/*
-	n = chHeapStatus(m, &size);*/
-	chprintf(chp, "core free memory : %u bytes\r\n", chCoreStatus());/*
-	chprintf(chp, "heap fragments   : %u\r\n", n);
-	chprintf(chp, "heap free total  : %u bytes\r\n", size);*/
-}
 
 static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
 	(void) argc;
@@ -282,7 +269,6 @@ static const ShellCommand shCmds[] = {
 	{"adjust", cmd_adjust},
 	{"schema", cmd_schema},
 //	{"time", cmd_time},
-	{"free", cmd_mem},
 	{"reboot", cmd_reboot},
 	{"bmp", cmd_pressure},
 //	{"chuk", cmd_chuk},
